@@ -6,9 +6,9 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>Controller', <%= classifiedPluralName %>Controller);
 
-  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'];
+  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve', '$translatePartialLoader', '$translate'];
 
-  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %>) {
+  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %>, $translatePartialLoader, $translate) {
     var vm = this;
 
     vm.authentication = Authentication;
@@ -17,6 +17,9 @@
     vm.form = {};
     vm.remove = remove;
     vm.save = save;
+
+    $translatePartialLoader.addPart('<%= slugifiedPluralName %>');
+    $translate.refresh();
 
     // Remove existing <%= humanizedSingularName %>
     function remove() {
@@ -32,12 +35,9 @@
         return false;
       }
 
-      // TODO: move create/update logic to service
-      if (vm.<%= camelizedSingularName %>._id) {
-        vm.<%= camelizedSingularName %>.$update(successCallback, errorCallback);
-      } else {
-        vm.<%= camelizedSingularName %>.$save(successCallback, errorCallback);
-      }
+      vm.<%= camelizedSingularName %>.createOrUpdate()
+          .then(successCallback)
+          .catch(errorCallback);
 
       function successCallback(res) {
         $state.go('<%= slugifiedPluralName %>.view', {

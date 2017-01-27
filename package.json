@@ -1,5 +1,5 @@
 {
-  "name": "generator-meanjs",
+  "name": "generator-johnny",
   "version": "0.4.5",
   "description": "MEAN.JS Official Yeoman Generator",
   "main": "app/index.js",

@@ -15,6 +15,7 @@ var path = require('path'),
 exports.create = function(req, res) {
   var <%= camelizedSingularName %> = new <%= classifiedSingularName %>(req.body);
   <%= camelizedSingularName %>.user = req.user;
+  <%= camelizedSingularName %>.modified.push({ 'date': Date.now(), 'user': req.user, 'action': 'C' });
 
   <%= camelizedSingularName %>.save(function(err) {
     if (err) {
@@ -48,6 +49,7 @@ exports.update = function(req, res) {
   var <%= camelizedSingularName %> = req.<%= camelizedSingularName %>;
 
   <%= camelizedSingularName %> = _.extend(<%= camelizedSingularName %>, req.body);
+  <%= camelizedSingularName %>.modified.push({ 'date': Date.now(), 'user': req.user, 'action': 'U' });
 
   <%= camelizedSingularName %>.save(function(err) {
     if (err) {
@@ -65,6 +67,18 @@ exports.update = function(req, res) {
  */
 exports.delete = function(req, res) {
   var <%= camelizedSingularName %> = req.<%= camelizedSingularName %>;
+  <%= camelizedSingularName %>.active = false;
+  <%= camelizedSingularName %>.modified.push({ 'date': Date.now(), 'user': req.user, 'action': 'D' });
+
+  <%= camelizedSingularName %>.save(function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(mission);
+    }
+  });
 
   <%= camelizedSingularName %>.remove(function(err) {
     if (err) {
@@ -103,7 +117,7 @@ exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {
     });
   }
 
-  <%= classifiedSingularName %>.findById(id).populate('user', 'displayName').exec(function (err, <%= camelizedSingularName %>) {
+  <%= classifiedSingularName %>.findById(id).populate('user', 'displayName').populate('modified.user', 'displayName').exec(function (err, <%= camelizedSingularName %>) {
     if (err) {
       return next(err);
     } else if (!<%= camelizedSingularName %>) {

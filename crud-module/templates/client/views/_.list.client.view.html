@@ -3,20 +3,20 @@
     <h1><%= humanizedPluralName %></h1>
   </div>
   <div class="list-group">
-    <a ng-repeat="<%= slugifiedSingularName %> in vm.<%= camelizedPluralName %>"
-       ui-sref="<%= camelizedPluralName %>.view({ <%= slugifiedSingularName %>Id: <%= slugifiedSingularName %>._id })"
+    <a ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %>"
+       ui-sref="<%= camelizedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })"
        class="list-group-item">
       <small class="list-group-item-text">
-        Posted on
+        {{ "Created on" | translate }}
         <span ng-bind="<%= camelizedSingularName %>.created | date:'mediumDate'"></span>
-        by
+        {{ "by" | translate }}
         <span ng-if="<%= camelizedSingularName %>.user" ng-bind="<%= camelizedSingularName %>.user.displayName"></span>
-        <span ng-if="!<%= camelizedSingularName %>.user">Deleted User</span>
+        <span ng-if="!<%= camelizedSingularName %>.user" translate>Deleted User</span>
       </small>
-      <h4 class="list-group-item-heading" ng-bind="<%= slugifiedSingularName %>.name"></h4>
+      <h4 class="list-group-item-heading" ng-bind="<%= camelizedSingularName %>.name"></h4>
     </a>
   </div>
   <div class="alert alert-warning text-center" ng-if="vm.<%= camelizedPluralName %>.$resolved && !vm.<%= camelizedPluralName %>.length">
-    No <%= humanizedPluralName %> yet, why don't you <a ui-sref="<%= camelizedPluralName %>.create">create one</a>?
+    {{ "No <%= humanizedPluralName %> yet, why don't you" | translate }} <a ui-sref="<%= camelizedPluralName %>.create" translate>create one</a>?
   </div>
 </section>

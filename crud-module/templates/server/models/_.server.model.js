@@ -23,6 +23,23 @@ var <%= classifiedSingularName %>Schema = new Schema({
   user: {
     type: Schema.ObjectId,
     ref: 'User'
+  },
+  modified: [{
+    _id: false,
+    date: {
+      type: Date
+    },
+    user: {
+      type: Schema.ObjectId,
+      ref: 'User'
+    },
+    action: {
+      type: String
+    }
+  }],
+  active: {
+    type: Boolean,
+    default: true
   }
 });
 

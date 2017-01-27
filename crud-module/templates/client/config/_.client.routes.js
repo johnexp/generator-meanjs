@@ -9,55 +9,57 @@
 
   function routeConfig($stateProvider) {
     $stateProvider
-      .state('<%= slugifiedPluralName %>', {
+      .state('<%= camelizedPluralName %>', {
         abstract: true,
         url: '/<%= slugifiedPluralName %>',
         template: '<ui-view/>'
       })
-      .state('<%= slugifiedPluralName %>.list', {
+      .state('<%= camelizedPluralName %>.list', {
         url: '',
-        templateUrl: 'modules/<%= slugifiedPluralName %>/client/views/list-<%= slugifiedPluralName %>.client.view.html',
+        templateUrl: '/modules/<%= slugifiedPluralName %>/client/views/list-<%= slugifiedPluralName %>.client.view.html',
         controller: '<%= classifiedPluralName %>ListController',
         controllerAs: 'vm',
         data: {
+          roles: ['user', 'admin'],
           pageTitle: '<%= humanizedPluralName %> List'
         }
       })
-      .state('<%= slugifiedPluralName %>.create', {
+      .state('<%= camelizedPluralName %>.create', {
         url: '/create',
-        templateUrl: 'modules/<%= slugifiedPluralName %>/client/views/form-<%= slugifiedSingularName %>.client.view.html',
+        templateUrl: '/modules/<%= slugifiedPluralName %>/client/views/form-<%= slugifiedSingularName %>.client.view.html',
         controller: '<%= classifiedPluralName %>Controller',
         controllerAs: 'vm',
         resolve: {
-          <%= slugifiedSingularName %>Resolve: new<%= classifiedSingularName %>
+          <%= camelizedSingularName %>Resolve: new<%= classifiedSingularName %>
         },
         data: {
-          roles: ['user', 'admin'],
+          roles: ['admin'],
           pageTitle: '<%= humanizedPluralName %> Create'
         }
       })
-      .state('<%= slugifiedPluralName %>.edit', {
+      .state('<%= camelizedPluralName %>.edit', {
         url: '/:<%= camelizedSingularName %>Id/edit',
-        templateUrl: 'modules/<%= slugifiedPluralName %>/client/views/form-<%= slugifiedSingularName %>.client.view.html',
+        templateUrl: '/modules/<%= slugifiedPluralName %>/client/views/form-<%= slugifiedSingularName %>.client.view.html',
         controller: '<%= classifiedPluralName %>Controller',
         controllerAs: 'vm',
         resolve: {
-          <%= slugifiedSingularName %>Resolve: get<%= classifiedSingularName %>
+          <%= camelizedSingularName %>Resolve: get<%= classifiedSingularName %>
         },
         data: {
-          roles: ['user', 'admin'],
+          roles: ['admin'],
           pageTitle: 'Edit <%= humanizedSingularName %> {{ <%= slugifiedSingularName %>Resolve.name }}'
         }
       })
-      .state('<%= slugifiedPluralName %>.view', {
+      .state('<%= camelizedPluralName %>.view', {
         url: '/:<%= camelizedSingularName %>Id',
-        templateUrl: 'modules/<%= slugifiedPluralName %>/client/views/view-<%= slugifiedSingularName %>.client.view.html',
+        templateUrl: '/modules/<%= slugifiedPluralName %>/client/views/view-<%= slugifiedSingularName %>.client.view.html',
         controller: '<%= classifiedPluralName %>Controller',
         controllerAs: 'vm',
         resolve: {
-          <%= slugifiedSingularName %>Resolve: get<%= classifiedSingularName %>
+          <%= camelizedSingularName %>Resolve: get<%= classifiedSingularName %>
         },
         data: {
+          roles: ['user', 'admin'],
           pageTitle: '<%= humanizedSingularName %> {{ <%= slugifiedSingularName %>Resolve.name }}'
         }
       });

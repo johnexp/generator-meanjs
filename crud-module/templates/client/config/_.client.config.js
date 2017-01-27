@@ -11,22 +11,24 @@
     // Set top bar menu items
     menuService.addMenuItem('topbar', {
       title: '<%= humanizedPluralName %>',
-      state: '<%= slugifiedPluralName %>',
+      state: '<%= camelizedPluralName %>',
       type: 'dropdown',
-      roles: ['*']
+      icon: 'help',
+      roles: ['user', 'admin']
     });
 
     // Add the dropdown list item
-    menuService.addSubMenuItem('topbar', '<%= slugifiedPluralName %>', {
+    menuService.addSubMenuItem('topbar', '<%= camelizedPluralName %>', {
       title: 'List <%= humanizedPluralName %>',
-      state: '<%= slugifiedPluralName %>.list'
+      state: '<%= camelizedPluralName %>.list',
+      roles: ['user', 'admin']
     });
 
     // Add the dropdown create item
-    menuService.addSubMenuItem('topbar', '<%= slugifiedPluralName %>', {
+    menuService.addSubMenuItem('topbar', '<%= camelizedPluralName %>', {
       title: 'Create <%= humanizedSingularName %>',
-      state: '<%= slugifiedPluralName %>.create',
-      roles: ['user']
+      state: '<%= camelizedPluralName %>.create',
+      roles: ['admin']
     });
   }
 }());

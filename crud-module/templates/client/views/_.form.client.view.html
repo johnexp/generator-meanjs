@@ -1,24 +1,27 @@
-<section>
-  <div class="page-header">
-    <h1>{{vm.<%= slugifiedSingularName %>._id ? 'Edit <%= humanizedSingularName %>' : 'New <%= humanizedSingularName %>'}}</h1>
+<md-content layout="column" layout-padding>
+  <div layout="column">
+    <h2 class="md-title" translate>{{vm.<%= camelizedSingularName %>._id ? 'Edit <%= humanizedSingularName %>' : 'New <%= humanizedSingularName %>'}}</h2>
+    <md-divider></md-divider>
   </div>
-  <div class="col-md-12">
-    <form name="vm.form.<%= slugifiedSingularName %>Form" class="form-horizontal" ng-submit="vm.save(vm.form.<%= slugifiedSingularName %>Form.$valid)" novalidate>
-      <fieldset>
-        <div class="form-group" show-errors>
-          <label class="control-label" for="name">Name</label>
-          <input name="name" type="text" ng-model="vm.<%= slugifiedSingularName %>.name" id="name" class="form-control" placeholder="Name" required>
-          <div ng-messages="vm.form.<%= slugifiedSingularName %>Form.name.$error" role="alert">
-            <p class="help-block error-text" ng-message="required"><%= humanizedSingularName %> name is required.</p>
-          </div>
+  <form name="vm.form.<%= camelizedSingularName %>Form" layout="column" ng-submit="vm.save(vm.form.<%= camelizedSingularName %>Form.$valid)" novalidate>
+    <div layout="row">
+      <md-input-container flex="50">
+        <label translate>Name</label>
+        <md-icon md-font-set="material-icons">person</md-icon>
+        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>.name" id="name" required>
+        <div ng-messages="vm.form.<%= camelizedSingularName %>Form.name.$error">
+          <p ng-message="required" translate><%= humanizedSingularName %> name is required.</p>
         </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-default">{{vm.<%= slugifiedSingularName %>._id ? 'Update' : 'Create'}}</button>
-        </div>
-        <div ng-show="vm.error" class="text-danger">
-          <strong ng-bind="vm.error"></strong>
-        </div>
-      </fieldset>
-    </form>
-  </div>
-</section>
+      </md-input-container>
+    </div>
+    <div layout="row" layout-align="end center">
+      <md-button type="submit" class="md-primary md-raised" translate>
+        <md-icon md-font-set="material-icons">save</md-icon>
+        {{vm.<%= camelizedSingularName %>._id ? 'Update' : 'Create'}}
+      </md-button>
+    </div>
+    <div ng-show="vm.error" class="text-danger">
+      <strong ng-bind="vm.error"></strong>
+    </div>
+  </form>
+</md-content>

@@ -1,0 +1,21 @@
+{
+  "<%= humanizedPluralName %>": "<%= humanizedPluralName %>",
+  "create one": "criar um",
+  "No <%= humanizedPluralName %> yet, why don't you": "Sem <%= humanizedPluralName %> ainda, deseja",
+  "Edit <%= humanizedSingularName %>": "Editar <%= humanizedSingularName %>",
+  "New <%= humanizedSingularName %>": "Novo <%= humanizedSingularName %>",
+  "Name": "Nome",
+  "Create": "Criar",
+  "Update": "Atualizar",
+  "<%= humanizedSingularName %> name is required.": "O nome do <%= humanizedSingularName %> é obrigatório.",
+  "Deleted User": "Usuário removido",
+  "Created on": "Postado em",
+  "by": "por",
+  "U": "Atualizado",
+  "C": "Criado",
+  "D": "Excluído",
+  "User": "Usuário",
+  "Date": "Data",
+  "Action": "Ação",
+  "History": "Histórico"
+}
