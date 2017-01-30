@@ -107,6 +107,21 @@ exports.list = function(req, res) {
 };
 
 /**
+ * List of active <%= humanizedPluralName %>
+ */
+exports.listActive = function(req, res) {
+  <%= classifiedSingularName %>.find({'active': true}).sort('-created').populate('user', 'displayName').exec(function(err, <%= camelizedPluralName %>) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(<%= camelizedPluralName %>);
+    }
+  });
+};
+
+/**
  * <%= humanizedSingularName %> middleware
  */
 exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {

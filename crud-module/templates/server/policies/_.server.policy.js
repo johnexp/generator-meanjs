@@ -25,15 +25,6 @@ exports.invokeRolesPolicies = function () {
     roles: ['user'],
     allows: [{
       resources: '/api/<%= slugifiedPluralName %>',
-      permissions: ['get', 'post']
-    }, {
-      resources: '/api/<%= slugifiedPluralName %>/:<%= camelizedSingularName %>Id',
-      permissions: ['get']
-    }]
-  }, {
-    roles: ['guest'],
-    allows: [{
-      resources: '/api/<%= slugifiedPluralName %>',
       permissions: ['get']
     }, {
       resources: '/api/<%= slugifiedPluralName %>/:<%= camelizedSingularName %>Id',

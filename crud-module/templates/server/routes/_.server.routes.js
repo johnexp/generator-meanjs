@@ -12,6 +12,9 @@ module.exports = function(app) {
     .get(<%= camelizedPluralName %>.list)
     .post(<%= camelizedPluralName %>.create);
 
+  app.route('/api/<%= slugifiedPluralName %>').all(<%= camelizedPluralName %>Policy.isAllowed)
+  .get(<%= camelizedPluralName %>.listActive);
+
   app.route('/api/<%= slugifiedPluralName %>/:<%= camelizedSingularName %>Id').all(<%= camelizedPluralName %>Policy.isAllowed)
     .get(<%= camelizedPluralName %>.read)
     .put(<%= camelizedPluralName %>.update)

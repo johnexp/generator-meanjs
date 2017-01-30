@@ -1,21 +1,8 @@
 {
   "<%= humanizedPluralName %>": "<%= humanizedPluralName %>",
-  "create_one": "create one",
   "No <%= humanizedPluralName %> yet, why don't you": "No <%= humanizedPluralName %> yet, why don't you",
   "Edit <%= humanizedSingularName %>": "Edit <%= humanizedSingularName %>",
   "New <%= humanizedSingularName %>": "New <%= humanizedSingularName %>",
   "Name": "Name",
-  "Create": "Create",
-  "Update": "Update",
-  "<%= humanizedSingularName %> name is required.": "<%= humanizedSingularName %> name is required.",
-  "Deleted User": "Deleted User",
-  "Created on": "Created on",
-  "by": "by",
-  "U": "Updated",
-  "C": "Created",
-  "D": "Deleted",
-  "User": "User",
-  "Date": "Date",
-  "Action": "Action",
-  "History": "History"
+  "<%= humanizedSingularName %> name is required.": "<%= humanizedSingularName %> name is required."
 }
