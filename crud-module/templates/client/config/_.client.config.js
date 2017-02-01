@@ -9,7 +9,7 @@
 
   function menuConfig(menuService) {
     // Set top bar menu items
-    menuService.addMenuItem('topbar', {
+    menuService.addMenuItem('<%= menuId %>', {
       title: '<%= humanizedPluralName %>',
       state: '<%= camelizedPluralName %>',
       type: 'dropdown',
@@ -18,17 +18,25 @@
     });
 
     // Add the dropdown list item
-    menuService.addSubMenuItem('topbar', '<%= camelizedPluralName %>', {
+    menuService.addSubMenuItem('<%= menuId %>', '<%= camelizedPluralName %>', {
       title: 'List <%= humanizedPluralName %>',
       state: '<%= camelizedPluralName %>.list',
       roles: ['user', 'admin']
     });
 
     // Add the dropdown create item
-    menuService.addSubMenuItem('topbar', '<%= camelizedPluralName %>', {
+    menuService.addSubMenuItem('<%= menuId %>', '<%= camelizedPluralName %>', {
       title: 'Create <%= humanizedSingularName %>',
       state: '<%= camelizedPluralName %>.create',
       roles: ['admin']
     });
+
+    <% if (exclusionType == true) { %>
+    var thisIsATest = "Successfull";
+    <% } %>
+
+    <% if (internacionalizationSupport == true) { %>
+      var thisIsATest2 = "Internacionalization";
+    <% } %>
   }
 }());
