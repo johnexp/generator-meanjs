@@ -62,15 +62,34 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 				checked: false
 			}]
 		}, {
-			type: 'confirm',
-			name: 'exclusionType',
-			message: 'This module has logical exclusion?',
-			default: false
+			type: 'checkbox',
+			name: 'specifications',
+			message: 'Which specifications and technologies would you like your module to include?',
+			choices: [{
+				value: 'logicalExclusion',
+				name: 'Logical Exclusion',
+				checked: false
+			}, {
+				value: 'internacionalization',
+				name: 'Internacionalization Support (i18n)',
+				checked: false
+			}]
 		}, {
 			type: 'confirm',
-			name: 'internacionalizationSupport',
-			message: 'This module has internacionalization support?',
-			default: true
+			name: 'refilterActives',
+			message: 'Do you want to refilter data when change you module activation state?',
+			default: false
+		}, {
+			type: 'list',
+			name: 'listType',
+			message: 'What kind of filter does your module have?',
+			choices: [{
+				value: 'simple',
+				name: 'Simple (Just a list of objects with a simple filter)',
+			}, {
+				value: 'complex',
+				name: 'Complex (Table with ordering and filtering per columns and pagination)',
+			}]
 		}, {
 			type: 'confirm',
 			name: 'addMenuItems',
@@ -79,7 +98,7 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 		}];
 
 		this.prompt(prompts, function (props) {
-			var clientFolders = {}, serverFolders = {};
+			var clientFolders = {}, serverFolders = {}, specifications = {};
 
 			_.forEach(props.clientFolders, function (prop) {
 				clientFolders[prop] = true;
@@ -87,12 +106,15 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			_.forEach(props.serverFolders, function (prop) {
 				serverFolders[prop] = true;
 			});
+			_.forEach(props.specifications, function (prop) {
+				specifications[prop] = true;
+			});
 
 			this.clientFolders = clientFolders;
 			this.serverFolders = serverFolders;
-
-			this.internacionalizationSupport = props.internacionalizationSupport;
-			this.exclusionType = props.exclusionType;
+			this.specifications = specifications;
+			this.listType = props.listType;
+			this.refilterActives = props.refilterActives;
 			this.addMenuItems = props.addMenuItems;
 
 			done();
@@ -138,11 +160,20 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			mkdirp.sync('modules/' + this.slugifiedPluralName + '/client/filters');
 		}
 
+		if (this.specifications.internacionalization) {
+			mkdirp.sync('modules/' + this.slugifiedPluralName + '/client/i18n');
+			this.template('client/i18n/_.en_US.json', 'modules/' + this.slugifiedPluralName + '/client/i18n/' + this.slugifiedPluralName + '.en_US.json');
+			this.template('client/i18n/_.pt_BR.json', 'modules/' + this.slugifiedPluralName + '/client/i18n/' + this.slugifiedPluralName + '.pt_BR.json');
+		}
+
 		// Render angular module files
 		this.template('client/config/_.client.routes.js', 'modules/' + this.slugifiedPluralName + '/client/config/' + this.slugifiedPluralName + '.client.routes.js');
 		this.template('client/controllers/_.client.controller.js', 'modules/' + this.slugifiedPluralName + '/client/controllers/' + this.slugifiedPluralName + '.client.controller.js');
 		this.template('client/controllers/_.list.client.controller.js', 'modules/' + this.slugifiedPluralName + '/client/controllers/list-' + this.slugifiedPluralName + '.client.controller.js');
 		this.template('client/services/_.client.service.js', 'modules/' + this.slugifiedPluralName + '/client/services/' + this.slugifiedPluralName + '.client.service.js');
+		if (this.refilterActives) {
+			this.template('client/services/_list.client.service.js', 'modules/' + this.slugifiedPluralName + '/client/services/list-' + this.slugifiedPluralName + '.client.service.js');
+		}
 
 		// Render angular tests
 		this.template('tests/client/_.client.controller.tests.js', 'modules/' + this.slugifiedPluralName + '/tests/client/' + this.slugifiedPluralName + '.client.controller.tests.js');

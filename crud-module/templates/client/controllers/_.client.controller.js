@@ -6,9 +6,9 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>Controller', <%= classifiedPluralName %>Controller);
 
-  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve', '$translatePartialLoader', '$translate'];
+  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (this.specifications.internacionalization) { %>, '$translatePartialLoader', '$translate'<% } %>];
 
-  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %>, $translatePartialLoader, $translate) {
+  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (this.specifications.internacionalization) { %>, $translatePartialLoader, $translate<% } %>) {
     var vm = this;
 
     vm.authentication = Authentication;
@@ -16,11 +16,11 @@
     vm.error = null;
     vm.form = {};
     vm.remove = remove;
-    vm.save = save;
+    vm.save = save;<% if (this.specifications.internacionalization) { %>
 
     $translatePartialLoader.addPart('<%= slugifiedPluralName %>');
     $translate.refresh();
-
+<% } %>
     // Remove existing <%= humanizedSingularName %>
     function remove() {
       if ($window.confirm('Are you sure you want to delete?')) {
