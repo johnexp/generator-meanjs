@@ -62,34 +62,49 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 				checked: false
 			}]
 		}, {
-			type: 'checkbox',
-			name: 'specifications',
-			message: 'Which specifications and technologies would you like your module to include?',
-			choices: [{
-				value: 'logicalExclusion',
-				name: 'Logical Exclusion',
-				checked: false
-			}, {
-				value: 'internacionalization',
-				name: 'Internacionalization Support (i18n)',
-				checked: false
-			}]
-		}, {
 			type: 'confirm',
-			name: 'refilterActives',
-			message: 'Do you want to refilter data when change you module activation state?',
+			name: 'logicalExclusion',
+			message: 'Does your module will have logical exclusion?',
 			default: false
 		}, {
 			type: 'list',
 			name: 'listType',
-			message: 'What kind of filter does your module have?',
+			message: 'What kind of list does your module have?',
 			choices: [{
 				value: 'simple',
-				name: 'Simple (Just a list of objects with a simple filter)',
+				name: 'Simple (Just a list of items with a simple information)',
 			}, {
 				value: 'complex',
 				name: 'Complex (Table with ordering and filtering per columns and pagination)',
 			}]
+		}, {
+			type: 'list',
+			name: 'filterType',
+			message: 'What kind of filter does your module have?',
+			choices: [{
+				value: 'angular',
+				name: 'Angular filter (Filter items at client side)',
+			}, {
+				value: 'database',
+				name: 'Database filter (Filter items at server side)',
+			}],
+			default: 'angular',
+			when: function (response) {
+				return response.listType == 'complex';
+			}
+		}, {
+			type: 'confirm',
+			name: 'refilterActives',
+			message: 'Do you want to refilter data when change you module activation state?',
+			default: false,
+			when: function (response) {
+				return response.filterType == 'angular' && response.logicalExclusion == true;
+			}
+		}, {
+			type: 'confirm',
+			name: 'internationalization',
+			message: 'Does your module will have Internationalization Support (i18n)?',
+			default: false
 		}, {
 			type: 'confirm',
 			name: 'addMenuItems',
@@ -106,13 +121,11 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			_.forEach(props.serverFolders, function (prop) {
 				serverFolders[prop] = true;
 			});
-			_.forEach(props.specifications, function (prop) {
-				specifications[prop] = true;
-			});
 
 			this.clientFolders = clientFolders;
 			this.serverFolders = serverFolders;
-			this.specifications = specifications;
+			this.logicalExclusion = logicalExclusion;
+			this.internationalization = internationalization;
 			this.listType = props.listType;
 			this.refilterActives = props.refilterActives;
 			this.addMenuItems = props.addMenuItems;
@@ -160,7 +173,7 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			mkdirp.sync('modules/' + this.slugifiedPluralName + '/client/filters');
 		}
 
-		if (this.specifications.internacionalization) {
+		if (this.internationalization) {
 			mkdirp.sync('modules/' + this.slugifiedPluralName + '/client/i18n');
 			this.template('client/i18n/_.en_US.json', 'modules/' + this.slugifiedPluralName + '/client/i18n/' + this.slugifiedPluralName + '.en_US.json');
 			this.template('client/i18n/_.pt_BR.json', 'modules/' + this.slugifiedPluralName + '/client/i18n/' + this.slugifiedPluralName + '.pt_BR.json');

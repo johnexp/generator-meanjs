@@ -6,9 +6,9 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>Controller', <%= classifiedPluralName %>Controller);
 
-  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (this.specifications.internacionalization) { %>, '$translatePartialLoader', '$translate'<% } %>];
+  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (specifications.internacionalization) { %>, '$translatePartialLoader', '$translate'<% } %>];
 
-  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (this.specifications.internacionalization) { %>, $translatePartialLoader, $translate<% } %>) {
+  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (specifications.internacionalization) { %>, $translatePartialLoader, $translate<% } %>) {
     var vm = this;
 
     vm.authentication = Authentication;
@@ -16,7 +16,7 @@
     vm.error = null;
     vm.form = {};
     vm.remove = remove;
-    vm.save = save;<% if (this.specifications.internacionalization) { %>
+    vm.save = save;<% if (specifications.internacionalization) { %>
 
     $translatePartialLoader.addPart('<%= slugifiedPluralName %>');
     $translate.refresh();
