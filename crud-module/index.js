@@ -98,7 +98,7 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			message: 'Do you want to refilter data when change you module activation state?',
 			default: false,
 			when: function (response) {
-				return response.filterType == 'angular' && response.logicalExclusion == true;
+				return (!response.filterType || response.filterType == 'angular') && response.logicalExclusion == true;
 			}
 		}, {
 			type: 'confirm',
@@ -113,7 +113,7 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 		}];
 
 		this.prompt(prompts, function (props) {
-			var clientFolders = {}, serverFolders = {}, specifications = {};
+			var clientFolders = {}, serverFolders = {};
 
 			_.forEach(props.clientFolders, function (prop) {
 				clientFolders[prop] = true;
@@ -124,10 +124,11 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 
 			this.clientFolders = clientFolders;
 			this.serverFolders = serverFolders;
-			this.logicalExclusion = logicalExclusion;
-			this.internationalization = internationalization;
+			this.logicalExclusion = props.logicalExclusion;
 			this.listType = props.listType;
+			this.filterType = props.filterType != null ? props.filterType : 'angular';
 			this.refilterActives = props.refilterActives;
+			this.internationalization = props.internationalization;
 			this.addMenuItems = props.addMenuItems;
 
 			done();
@@ -184,9 +185,7 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 		this.template('client/controllers/_.client.controller.js', 'modules/' + this.slugifiedPluralName + '/client/controllers/' + this.slugifiedPluralName + '.client.controller.js');
 		this.template('client/controllers/_.list.client.controller.js', 'modules/' + this.slugifiedPluralName + '/client/controllers/list-' + this.slugifiedPluralName + '.client.controller.js');
 		this.template('client/services/_.client.service.js', 'modules/' + this.slugifiedPluralName + '/client/services/' + this.slugifiedPluralName + '.client.service.js');
-		if (this.refilterActives) {
-			this.template('client/services/_list.client.service.js', 'modules/' + this.slugifiedPluralName + '/client/services/list-' + this.slugifiedPluralName + '.client.service.js');
-		}
+		this.template('client/services/_list.client.service.js', 'modules/' + this.slugifiedPluralName + '/client/services/list-' + this.slugifiedPluralName + '.client.service.js');
 
 		// Render angular tests
 		this.template('tests/client/_.client.controller.tests.js', 'modules/' + this.slugifiedPluralName + '/tests/client/' + this.slugifiedPluralName + '.client.controller.tests.js');

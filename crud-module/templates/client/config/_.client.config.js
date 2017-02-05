@@ -30,11 +30,5 @@
       state: '<%= camelizedPluralName %>.create',
       roles: ['admin']
     });
-    <% if (specifications.logicalExclusion == true) { %>
-    var thisIsATest = "Successfull";
-    <% } %>
-    <% if (specifications.internacionalization == true) { %>
-    var thisIsATest2 = "Internacionalization";
-    <% } %>
   }
 }());

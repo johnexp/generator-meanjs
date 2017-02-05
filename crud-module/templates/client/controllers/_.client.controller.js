@@ -6,32 +6,55 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>Controller', <%= classifiedPluralName %>Controller);
 
-  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (specifications.internacionalization) { %>, '$translatePartialLoader', '$translate'<% } %>];
+  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %>, '$mdMedia', 'DialogService', 'Toast', '$log'];
 
-  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (specifications.internacionalization) { %>, $translatePartialLoader, $translate<% } %>) {
+  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (internationalization) { %>, $translatePartialLoader, $translate<% } %>, $mdMedia, DialogService, Toast, $log) {
     var vm = this;
 
     vm.authentication = Authentication;
     vm.<%= camelizedSingularName %> = <%= camelizedSingularName %>;
-    vm.error = null;
-    vm.form = {};
-    vm.remove = remove;
-    vm.save = save;<% if (specifications.internacionalization) { %>
+    vm.form = {};<% if (logicalExclusion) { %>
+    vm.changeState = changeState;<% } else { %>
+    vm.remove = remove;<% } %>
+    vm.save = save;
+    vm.$mdMedia = $mdMedia;<% if (internationalization) { %>
 
     $translatePartialLoader.addPart('<%= slugifiedPluralName %>');
     $translate.refresh();
-<% } %>
+<% } %><% if (logicalExclusion) { %>
+    // Change activation state of an existing <%= humanizedSingularName %>
+    function changeState(ev) {
+      DialogService.showConfirmInactivation(ev, function (option) {
+        if (option === true) {
+          vm.<%= camelizedSingularName %>.$remove(function () {
+            vm.<%= camelizedSingularName %>.active = false;
+          }, function (res) {
+            Toast.genericErrorMessage();
+            $log.error(res.data.message);
+          });
+        }
+      });
+    }<% } else { %>
     // Remove existing <%= humanizedSingularName %>
-    function remove() {
-      if ($window.confirm('Are you sure you want to delete?')) {
-        vm.<%= camelizedSingularName %>.$remove($state.go('<%= slugifiedPluralName %>.list'));
-      }
-    }
+    function remove(ev) {
+      DialogService.showConfirmDeletion(ev, function (option) {
+        if (option === true) {
+          vm.<%= camelizedSingularName %>.$remove(function () {
+            $state.go('<%= slugifiedPluralName %>.list');
+          }, function (res) {
+            Toast.genericErrorMessage();
+            $log.error(res.data.message);
+          });
+        }
+      });
+    }<% } %>
 
     // Save <%= humanizedSingularName %>
     function save(isValid) {
       if (!isValid) {
-        $scope.$broadcast('show-errors-check-validity', 'vm.form.<%= camelizedSingularName %>Form');
+        $scope.$broadcast('show-errors-check-validity', 'vm.form.<%= camelizedSingularName %>Form');<% if (internationalization) { %>
+        Toast.error($translate.instant('Some fields were not filled correctly'));<% } else { %>
+        Toast.error('Some fields were not filled correctly');<% } %>
         return false;
       }
 
@@ -46,7 +69,8 @@
       }
 
       function errorCallback(res) {
-        vm.error = res.data.message;
+        Toast.genericErrorMessage();
+        $log.error(res.data.message);
       }
     }
   }
