@@ -1,27 +1,35 @@
 <md-content layout="column" layout-padding>
   <div layout="column">
-    <h2 class="md-title" translate>{{vm.<%= camelizedSingularName %>._id ? 'Edit <%= humanizedSingularName %>' : 'New <%= humanizedSingularName %>'}}</h2>
+    <h2 class="md-title"<% if (internationalization) { %> translate<% } %>>{{vm.<%= camelizedSingularName %>._id ? 'Edit <%= humanizedSingularName %>' : 'New <%= humanizedSingularName %>'}}</h2>
     <md-divider></md-divider>
   </div>
   <form name="vm.form.<%= camelizedSingularName %>Form" layout="column" ng-submit="vm.save(vm.form.<%= camelizedSingularName %>Form.$valid)" novalidate>
-    <div layout="row">
-      <md-input-container flex="50">
-        <label translate>Name</label>
+    <div layout="row" layout-xs="column">
+      <md-input-container flex>
+        <label<% if (internationalization) { %> translate<% } %>>Name</label>
         <md-icon md-font-set="material-icons">person</md-icon>
         <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>.name" id="name" required>
         <div ng-messages="vm.form.<%= camelizedSingularName %>Form.name.$error">
-          <p ng-message="required" translate><%= humanizedSingularName %> name is required.</p>
+          <p ng-message="required"<% if (internationalization) { %> translate<% } %>><%= humanizedSingularName %> name is required.</p>
         </div>
+      </md-input-container>
+      <md-input-container flex>
+        <md-checkbox ng-model="vm.<%= camelizedSingularName %>.canBeEquiped">
+          <span<% if (internationalization) { %> translate<% } %>>Can Be Equiped</span>
+        </md-checkbox>
       </md-input-container>
     </div>
     <div layout="row" layout-align="end center">
-      <md-button type="submit" class="md-primary md-raised" translate>
-        <md-icon md-font-set="material-icons">save</md-icon>
-        {{vm.<%= camelizedSingularName %>._id ? 'Update' : 'Create'}}
+      <md-button type="button" class="md-raised md-warn" go-back-btn>
+        <md-icon md-font-set="material-icons">cancel</md-icon><% if (internationalization) { %>
+        {{'Cancel' | translate}}<% } else { %>
+        Cancel<% } %>
       </md-button>
-    </div>
-    <div ng-show="vm.error" class="text-danger">
-      <strong ng-bind="vm.error"></strong>
+      <md-button type="submit" class="md-primary md-raised">
+        <md-icon md-font-set="material-icons">save</md-icon>
+        {{vm.<%= camelizedSingularName %>._id ? 'Update' : 'Create'<% if (internationalization) { %> | translate<% } %>}}
+      </md-button>
     </div>
   </form>
 </md-content>
+

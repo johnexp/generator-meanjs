@@ -1,22 +1,296 @@
-<section>
-  <div class="page-header">
-    <h1><%= humanizedPluralName %></h1>
+<section layout="column" layout-padding>
+  <div layout="row">
+    <h2 class="md-title"<% if (internationalization) { %> translate<% } %>><%= humanizedPluralName %></h2>
+    <div flex></div>
+    <list-action-bar module-name="<%= slugifiedPluralName %>"></list-action-bar>
   </div>
-  <div class="list-group">
-    <a ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %>"
-       ui-sref="<%= camelizedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })"
-       class="list-group-item">
-      <small class="list-group-item-text">
-        {{ "Created on" | translate }}
-        <span ng-bind="<%= camelizedSingularName %>.created | date:'mediumDate'"></span>
-        {{ "by" | translate }}
-        <span ng-if="<%= camelizedSingularName %>.user" ng-bind="<%= camelizedSingularName %>.user.displayName"></span>
-        <span ng-if="!<%= camelizedSingularName %>.user" translate>Deleted User</span>
-      </small>
-      <h4 class="list-group-item-heading" ng-bind="<%= camelizedSingularName %>.name"></h4>
-    </a>
-  </div>
-  <div class="alert alert-warning text-center" ng-if="vm.<%= camelizedPluralName %>.$resolved && !vm.<%= camelizedPluralName %>.length">
-    {{ "No <%= humanizedPluralName %> yet, why don't you" | translate }} <a ui-sref="<%= camelizedPluralName %>.create" translate>create one</a>?
-  </div>
+  <md-divider></md-divider>
+  <h3 class="md-subheader"<% if (internationalization) { %> translate<% } %>>Filter</h3><% if (listType == 'simple') { %>
+  <form name="vm.form.<%= camelizedSingularName %>Filter" ng-submit="vm.filterSimple()">
+    <div layout="row">
+      <md-input-container flex="50">
+        <label<% if (internationalization) { %> translate<% } %>>Search</label>
+        <md-icon md-font-set="material-icons">filter_list</md-icon>
+        <input name="value" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.value">
+      </md-input-container>
+      <md-input-container flex="50">
+        <label<% if (internationalization) { %> translate<% } %>>Active</label>
+        <md-icon md-font-set="material-icons">check</md-icon>
+        <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active" ng-change="vm.refilter()">
+          <md-option ng-value=""><span<% if (internationalization) { %> translate<% } %>>All</span></md-option>
+          <md-option ng-value="true"<% if (internationalization) { %> translate<% } %>>Yes</md-option>
+          <md-option ng-value="false"<% if (internationalization) { %> translate<% } %>>No</md-option>
+        </md-select>
+      </md-input-container>
+    </div>
+  </form>
+  <md-divider></md-divider>
+  <md-list class="md-dense" flex>
+    <div ng-if="!vm.<%= camelizedPluralName %> || (vm.<%= camelizedPluralName %> | filter: { 'name': vm.<%= camelizedSingularName %>Filter.value }).length == 0">
+      <md-subheader class="md-no-sticky" layout="row" layout-align="center center"><% if (internationalization) { %>
+        {{ 'No records' | translate }}<% } else { %>
+        No records<% } %>
+      </md-subheader>
+      <md-divider></md-divider>
+    </div>
+    <md-list-item class="md-2-line secondary-button-padding" ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %> | filter: { 'name': vm.<%= camelizedSingularName %>Filter.value }">
+      <div class="md-list-item-text" layout="column">
+        <h3>{{ <%= camelizedSingularName %>.name }}</h3>
+        <p class="md-caption"><% if (internationalization) { %>
+          {{ "Posted on" | translate }}<% } else { %>
+          Posted on<% } %>
+          <span ng-bind="<%= camelizedSingularName %>.created | date:'mediumDate'"></span><% if (internationalization) { %>
+          {{ "by" | translate }}<% } else { %>
+          by<% } %>
+          <span ng-if="<%= camelizedSingularName %>.user" ng-bind="<%= camelizedSingularName %>.user.displayName"></span>
+          <span ng-if="!<%= camelizedSingularName %>.user"<% if (internationalization) { %> translate<% } %>>Deleted User</span>
+        </p>
+        <md-menu class="md-secondary">
+          <md-button ng-click="$mdOpenMenu()" class="md-icon-button">
+            <md-icon md-font-set="material-icons">more_vert</md-icon>
+            <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
+          </md-button>
+          <md-menu-content>
+            <md-menu-item>
+              <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })">
+                <md-icon class="md-primary" md-font-set="material-icons">remove_red_eye</md-icon><% if (internationalization) { %>
+                {{ 'View' | translate }}<% } else { %>
+                View<% } %>
+              </md-button>
+            </md-menu-item>
+            <md-menu-item>
+              <md-button ui-sref="<%= slugifiedPluralName %>.edit({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })">
+                <md-icon class="md-accent" md-font-set="material-icons">edit</md-icon><% if (internationalization) { %>
+                {{ 'Edit' | translate }}<% } else { %>
+                Edit<% } %>
+              </md-button>
+            </md-menu-item>
+            <md-menu-item><% if (logicalExclusion) { %>
+              <md-button ng-click="vm.changeState($event, <%= camelizedSingularName %>)">
+                <md-icon ng-if="<%= camelizedSingularName %>.active === true" class="md-warn" md-font-set="material-icons">remove_circle</md-icon>
+                <md-icon ng-if="<%= camelizedSingularName %>.active === false" class="md-accent md-hue-2" md-font-set="material-icons">check_circle</md-icon>
+                {{ <%= camelizedSingularName %>.active === true ? 'Inactivate' : 'Activate'<% if (internationalization) { %> | translate<% } %> }}
+              </md-button><% } else { %>
+              <md-button ng-click="vm.remove($event, <%= camelizedSingularName %>)">
+                <md-icon class="md-warn" md-font-set="material-icons">delete</md-icon><% if (internationalization) { %>
+                {{ 'Delete' | translate }}<% } else { %>
+                Delete<% } %>
+              </md-button><% } %>
+            </md-menu-item>
+          </md-menu-content>
+        </md-menu>
+      </div>
+      <md-divider></md-divider>
+    </md-list-item>
+  </md-list><% } if (listType == 'complex') { if (filterType == 'angular') { %>
+  <form name="vm.form.<%= camelizedSingularName %>Filter" form-on-change="vm.filter()">
+    <div layout="row" layout-xs="column" layout-margin>
+      <md-input-container flex>
+        <label<% if (internationalization) { %> translate<% } %>>Name</label>
+        <md-icon md-font-set="material-icons">person</md-icon>
+        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.name">
+      </md-input-container>
+      <md-input-container flex>
+        <label<% if (internationalization) { %> translate<% } %>>Active</label>
+        <md-icon md-font-set="material-icons">check</md-icon>
+        <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active" ng-change="vm.refilter()">
+          <md-option ng-value=""<% if (internationalization) { %> translate<% } %>>All</md-option>
+          <md-option ng-value="true"<% if (internationalization) { %> translate<% } %>>Yes</md-option>
+          <md-option ng-value="false"<% if (internationalization) { %> translate<% } %>>No</md-option>
+        </md-select>
+      </md-input-container>
+    </div>
+  </form>
+  <md-divider></md-divider>
+  <md-table-container>
+    <table md-table>
+      <thead md-head md-order="vm.pagination.sort">
+      <tr md-row>
+        <th md-column md-order-by="name"><% if (internationalization) { %>{{ 'Name' | translate }}<% } else { %>Name<% } %></th>
+        <th md-column><% if (internationalization) { %>{{ 'Actions' | translate }}<% } else { %>Actions<% } %></th>
+      </tr>
+      </thead>
+      <tbody md-body>
+      <tr md-row ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %> | orderBy: vm.pagination.sort | limitTo: vm.pagination.limit: (vm.pagination.page - 1) * vm.pagination.limit">
+        <td md-cell>{{ <%= camelizedSingularName %>.name }}</td>
+        <td md-cell layout="row">
+          <div class="show-gt-sm hide-xs hide-sm">
+            <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })" class="md-icon-button">
+              <md-icon class="md-primary" md-font-set="material-icons">remove_red_eye</md-icon>
+              <md-tooltip><% if (internationalization) { %>{{ 'View' | translate }}<% } else { %>View<% } %></md-tooltip>
+            </md-button>
+            <md-button ui-sref="<%= slugifiedPluralName %>.edit({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })" class="md-icon-button">
+              <md-icon class="md-accent" md-font-set="material-icons">edit</md-icon>
+              <md-tooltip><% if (internationalization) { %>{{ 'Edit' | translate }}<% } else { %>Edit<% } %></md-tooltip>
+            </md-button><% if (logicalExclusion) { %>
+            <md-button ng-click="vm.changeState($event, <%= camelizedSingularName %>)" class="md-icon-button">
+              <md-icon ng-if="<%= camelizedSingularName %>.active === true" class="md-warn" md-font-set="material-icons">remove_circle</md-icon>
+              <md-icon ng-if="<%= camelizedSingularName %>.active === false" class="md-accent md-hue-2" md-font-set="material-icons">check_circle</md-icon>
+              <md-tooltip>{{ <%= camelizedSingularName %>.active === true ? 'Inactivate' : 'Activate'<% if (internationalization) { %> | translate<% } %> }}</md-tooltip>
+            </md-button><% } else { %>
+            <md-button ng-click="vm.remove($event, <%= camelizedSingularName %>)" class="md-icon-button">
+              <md-icon class="md-warn" md-font-set="material-icons">delete</md-icon>
+              <md-tooltip><% if (internationalization) { %>{{ 'Delete' | translate }}<% } else { %>Delete<% } %></md-tooltip>
+            </md-button><% } %>
+          </div>
+          <div class="hide-gt-sm">
+            <md-menu>
+              <md-button ng-click="$mdOpenMenu()" class="md-icon-button">
+                <md-icon md-font-set="material-icons">more_vert</md-icon>
+                <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
+              </md-button>
+              <md-menu-content>
+                <md-menu-item>
+                  <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })">
+                    <md-icon class="md-primary" md-font-set="material-icons">remove_red_eye</md-icon><% if (internationalization) { %>
+                    {{ 'View' | translate }}<% } else { %>
+                    View<% } %>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ui-sref="<%= slugifiedPluralName %>.edit({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })">
+                    <md-icon class="md-accent" md-font-set="material-icons">edit</md-icon><% if (internationalization) { %>
+                    {{ 'Edit' | translate }}<% } else { %>
+                    Edit<% } %>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item><% if (logicalExclusion) { %>
+                  <md-button ng-click="vm.changeState($event, <%= camelizedSingularName %>)">
+                    <md-icon ng-if="<%= camelizedSingularName %>.active === true" class="md-warn" md-font-set="material-icons">remove_circle</md-icon>
+                    <md-icon ng-if="<%= camelizedSingularName %>.active === false" class="md-accent md-hue-2" md-font-set="material-icons">check_circle</md-icon>
+                    {{ <%= camelizedSingularName %>.active === true ? 'Inactivate' : 'Activate'<% if (internationalization) { %> | translate<% } %> }}
+                  </md-button><% } else { %>
+                  <md-button ng-click="vm.remove($event, <%= camelizedSingularName %>)">
+                    <md-icon class="md-warn" md-font-set="material-icons">delete</md-icon><% if (internationalization) { %>
+                    {{ 'Delete' | translate }}<% } else { %>
+                    Delete<% } %>
+                  </md-button><% } %>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <table md-table ng-if="!vm.<%= camelizedPluralName %> || vm.<%= camelizedPluralName %>.length == 0">
+      <tbody md-body>
+      <tr md-row>
+        <td md-cell class="no-records-cell" layout="row" layout-align="center center"><h2 class="md-subheader"<% if (internationalization) { %> translate<% } %>>No records</h2></td>
+      </tr>
+      </tbody>
+    </table>
+  </md-table-container>
+  <md-table-pagination md-limit="vm.pagination.limit" md-limit-options="vm.pagination.limitOptions" md-label="{{vm.pagination.label<% if (internationalization) { %> | translate<% } %>}}" md-page="vm.pagination.page" md-total="{{vm.<%= camelizedPluralName %>.length}}" md-page-select></md-table-pagination><% } else { %>
+  <form name="vm.form.<%= camelizedSingularName %>Filter">
+    <div layout="row" layout-xs="column" layout-margin>
+      <md-input-container flex>
+        <label<% if (internationalization) { %> translate<% } %>>Name</label>
+        <md-icon md-font-set="material-icons">person</md-icon>
+        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.name">
+      </md-input-container>
+      <md-input-container flex>
+        <label<% if (internationalization) { %> translate<% } %>>Active</label>
+        <md-icon md-font-set="material-icons">check</md-icon>
+        <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active">
+          <md-option ng-value=""<% if (internationalization) { %> translate<% } %>>All</md-option>
+          <md-option ng-value="true"<% if (internationalization) { %> translate<% } %>>Yes</md-option>
+          <md-option ng-value="false"<% if (internationalization) { %> translate<% } %>>No</md-option>
+        </md-select>
+      </md-input-container>
+    </div>
+    <div layout="row" layout-align="center center">
+      <md-button class="md-accent md-raised" ng-click="vm.filter()">
+        <md-icon md-font-set="material-icons">search</md-icon><% if (internationalization) { %>
+        {{ 'Search' | translate }}<% } else { %>
+        Search<% } %>
+      </md-button>
+      <md-button class="md-warn md-raised" ng-click="vm.<%= camelizedSingularName %>Filter = {}">
+        <md-icon md-font-set="material-icons">clear</md-icon><% if (internationalization) { %>
+        {{ 'Clear' | translate }}<% } else { %>
+        Clear<% } %>
+      </md-button>
+    </div>
+  </form>
+  <md-divider></md-divider>
+  <md-table-container>
+    <table md-table md-progress="vm.queryPromise">
+      <thead md-head md-order="vm.pagination.sort" md-on-reorder="vm.filter">
+      <tr md-row>
+        <th md-column md-order-by="name"><% if (internationalization) { %>{{ 'Name' | translate }}<% } else { %>Name<% } %></th>
+        <th md-column><% if (internationalization) { %>{{ 'Actions' | translate }}<% } else { %>Actions<% } %></th>
+      </tr>
+      </thead>
+      <tbody md-body>
+      <tr md-row ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %>">
+        <td md-cell>{{ <%= camelizedSingularName %>.name }}</td>
+        <td md-cell layout="row">
+          <div class="show-gt-sm hide-xs hide-sm">
+            <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })" class="md-icon-button">
+              <md-icon class="md-primary" md-font-set="material-icons">remove_red_eye</md-icon>
+              <md-tooltip><% if (internationalization) { %>{{ 'View' | translate }}<% } else { %>View<% } %></md-tooltip>
+            </md-button>
+            <md-button ui-sref="<%= slugifiedPluralName %>.edit({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })" class="md-icon-button">
+              <md-icon class="md-accent" md-font-set="material-icons">edit</md-icon>
+              <md-tooltip><% if (internationalization) { %>{{ 'Edit' | translate }}<% } else { %>Edit<% } %></md-tooltip>
+            </md-button><% if (logicalExclusion) { %>
+            <md-button ng-click="vm.changeState($event, <%= camelizedSingularName %>)" class="md-icon-button">
+              <md-icon ng-if="<%= camelizedSingularName %>.active === true" class="md-warn" md-font-set="material-icons">remove_circle</md-icon>
+              <md-icon ng-if="<%= camelizedSingularName %>.active === false" class="md-accent md-hue-2" md-font-set="material-icons">check_circle</md-icon>
+              <md-tooltip>{{ <%= camelizedSingularName %>.active === true ? 'Inactivate' : 'Activate'<% if (internationalization) { %> | translate<% } %> }}</md-tooltip>
+            </md-button><% } else { %>
+            <md-button ng-click="vm.remove($event, <%= camelizedSingularName %>)" class="md-icon-button">
+              <md-icon class="md-warn" md-font-set="material-icons">delete</md-icon>
+              <md-tooltip><% if (internationalization) { %>{{ 'Delete' | translate }}<% } else { %>Delete<% } %></md-tooltip>
+            </md-button><% } %>
+          </div>
+          <div class="hide-gt-sm">
+            <md-menu>
+              <md-button ng-click="$mdOpenMenu()" class="md-icon-button">
+                <md-icon md-font-set="material-icons">more_vert</md-icon>
+                <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
+              </md-button>
+              <md-menu-content>
+                <md-menu-item>
+                  <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })">
+                    <md-icon class="md-primary" md-font-set="material-icons">remove_red_eye</md-icon><% if (internationalization) { %>
+                    {{ 'View' | translate }}<% } else { %>
+                    View<% } %>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ui-sref="<%= slugifiedPluralName %>.edit({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })">
+                    <md-icon class="md-accent" md-font-set="material-icons">edit</md-icon><% if (internationalization) { %>
+                    {{ 'Edit' | translate }}<% } else { %>
+                    Edit<% } %>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item><% if (logicalExclusion) { %>
+                  <md-button ng-click="vm.changeState($event, <%= camelizedSingularName %>)">
+                    <md-icon ng-if="<%= camelizedSingularName %>.active === true" class="md-warn" md-font-set="material-icons">remove_circle</md-icon>
+                    <md-icon ng-if="<%= camelizedSingularName %>.active === false" class="md-accent md-hue-2" md-font-set="material-icons">check_circle</md-icon>
+                    {{ <%= camelizedSingularName %>.active === true ? 'Inactivate' : 'Activate'<% if (internationalization) { %> | translate<% } %> }}
+                  </md-button><% } else { %>
+                  <md-button ng-click="vm.remove($event, <%= camelizedSingularName %>)">
+                    <md-icon class="md-warn" md-font-set="material-icons">delete</md-icon><% if (internationalization) { %>
+                    {{ 'Delete' | translate }}<% } else { %>
+                    Delete<% } %>
+                  </md-button><% } %>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <table md-table ng-if="!vm.<%= camelizedPluralName %> || vm.<%= camelizedPluralName %>.length == 0">
+      <tbody md-body>
+      <tr md-row>
+        <td md-cell class="no-records-cell" layout="row" layout-align="center center"><h2 class="md-subheader"<% if (internationalization) { %> translate<% } %>>No records</h2></td>
+      </tr>
+      </tbody>
+    </table>
+  </md-table-container>
+  <md-table-pagination md-limit="vm.pagination.limit" md-limit-options="vm.pagination.limitOptions" md-label="{{vm.pagination.label<% if (internationalization) { %> | translate<% } %>}}" md-page="vm.pagination.page" md-total="{{vm.pagination.queryLimit}}" md-on-paginate="vm.filter" md-page-select></md-table-pagination><% }} %>
 </section>

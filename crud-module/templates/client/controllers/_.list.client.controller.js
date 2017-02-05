@@ -14,14 +14,13 @@
     vm.all<%= classifiedPluralName %> = List<%= classifiedPluralName %>Service.getByState({ active: true });<% } else { %>
     vm.all<%= classifiedPluralName %> = List<%= classifiedPluralName %>Service.getAll();<% }} %>
     vm.<%= camelizedPluralName %> = <% if (filterType == 'database') { %>{}<% } else { %>vm.all<%= classifiedPluralName %><% } %>;
-    vm.<%= camelizedSingularName %>Filter = {<% if (logicalExclusion) { %> active: true <% } %>};<% if (filterType == 'angular') { %>
-    vm.filterItems = filterItems;<% if (refilterActives) { %>
-    vm.refilter = refilter;<% } %><% } %><% if (logicalExclusion) { %>
+    vm.<%= camelizedSingularName %>Filter = {<% if (logicalExclusion) { %> active: true <% } %>};<% if (filterType == 'angular' && refilterActives) { %>
+    vm.refilter = refilter;<% } %><% if (logicalExclusion) { %>
     vm.changeState = changeState;<% } else { %>
-    vm.remove = remove;<% } %><% if (filterType == 'database') { %>
-    vm.filter = filter;<% } %><% if (filterType == 'angular') { %>
+    vm.remove = remove;<% } %>
+    vm.filter = filter;<% if (filterType == 'angular') { %>
 
-    function filterItems() {
+    function filter() {
       angular.forEach(vm.<%= camelizedSingularName %>Filter, function (value, key) {
         if (value === '') {
           delete vm.<%= camelizedSingularName %>Filter[key];
