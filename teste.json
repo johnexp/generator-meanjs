@@ -1,0 +1,116 @@
+{
+  "drink": {
+    "modelProps": {
+      "type": "String",
+      "uppercase": "false",
+      "lowercase": "false",
+      "trim": "true",
+      "match": "/^[a-zA-Z]+$/", 
+      "enum": "['Coffee', 'Tea']",
+      "validate": {
+        "validator": "function(v) {\n        return /(\\d{2}) \\d{5}-\\d{4}/.test(v);\n      }",
+        "message": "'{VALUE} is not a valid phone number!'" 
+      },
+      "required": "[true, 'Why no drink?']",
+      "default": "Coffee",
+      "maxlength": "[100, 'The value exceeds the maximum allowed length ({MAXLENGTH})']",
+      "minlength": "[5, 'The value is shorter than the minimum allowed length ({MINLENGTH})']",
+      "index": "true",
+      "unique": "false"
+    },
+    "viewProps": {
+      "name": "Drink",
+      "fieldType": "text",
+      "pattern": "/(\\d{2}) \\d{5}-\\d{4}/",
+      "message": "'This is not a valid phone number!'" 
+    }
+  },
+  "ammount": {
+    "modelProps": {
+      "type": "Number",
+      "required": "[true, 'Why no drink?']",
+      "default": "Coffee",
+      "max": "[100, 'Too much']",
+      "min": "[5, 'Too few']",
+      "get": "v => Math.round(v)",
+      "set": "v => Math.round(v)"
+    },
+    "viewProps": {
+      "name": "Ammount",
+      "fieldType": "number"
+    }
+  },
+  "eat": {
+    "modelProps": {
+      "type": "[{ type: String, enum: ['eggs', 'bacon'] }]"
+    },
+    "viewProps": {
+      "name": "Eat",
+      "fieldType": "checkbox",
+      "disabled": "!vm.teste.ammount"
+    }
+  },
+  "date": {
+    "modelProps": {
+      "type": "Date",
+      "default": "Date.now", 
+      "max": "new Date('October 13, 2017 11:13:00')",
+      "min": "Date.now"
+    },
+    "viewProps": {
+      "name": "Date",
+      "fieldType": "date"
+    }
+  },
+  "companion": {
+    "modelProps": {
+      "type": "[Schema.Types.ObjectId]",
+      "ref": "'User'"
+    },
+    "viewProps": {
+      "name": "Companion",
+      "fieldType": "select", 
+      "search": "true",
+      "multiple": "true"
+    }
+  },
+  "companion2": {
+    "modelProps": {
+      "type": "Schema.Types.ObjectId",
+      "ref": "'User'"
+    },
+    "viewProps": {
+      "name": "Companion 2",
+      "fieldType": "select", 
+      "search": "false",
+      "multiple": "false",
+      "async": "true",
+      "selectOptions": "md-no-underline"
+    }
+  },
+  "companion3": {
+    "modelProps": {
+      "type": "[Schema.Types.ObjectId]",
+      "ref": "'User'"
+    },
+    "viewProps": {
+      "name": "Companion 3",
+      "fieldType": "gridModal", 
+      "search": "true",
+      "multiple": "true",
+      "async": "true",
+      "pagination": "true"
+    }
+  },
+  "repeat": {
+    "modelProps": {
+      "type": "Boolean",
+      "required": "true",
+      "default": "false"
+    },
+    "viewProps": {
+      "name": "Repeat Every Day",
+      "fieldType": "switch"
+    }
+  }
+}

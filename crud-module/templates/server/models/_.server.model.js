@@ -23,7 +23,7 @@ var <%= classifiedSingularName %>Schema = new Schema({
   user: {
     type: Schema.ObjectId,
     ref: 'User'
-  },
+  }<% if (fieldsFileName) { %><%- printModelFields %><% } %>,
   modified: [{
     _id: false,
     date: {
@@ -36,11 +36,11 @@ var <%= classifiedSingularName %>Schema = new Schema({
     action: {
       type: String
     }
-  }],
+  }]<% if (logicalExclusion) { %>,
   active: {
     type: Boolean,
     default: true
-  }<% if (fieldsFileName) { %><%= printModelFields %><% } %>
+  }<% } %>
 });
 
 mongoose.model('<%= classifiedSingularName %>', <%= classifiedSingularName %>Schema);
