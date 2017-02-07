@@ -9,7 +9,7 @@
   List<%= classifiedPluralName %>Service.$inject = ['$resource'];
 
   function List<%= classifiedPluralName %>Service($resource){
-    var <%= classifiedPluralName %> = $resource('/api/<%= slugifiedPluralName %>/<%= if (logicalExclusion) { %>:active<% } %>', {}, {<% if (logicalExclusion) { %>
+    var <%= classifiedPluralName %> = $resource('/api/<%= slugifiedPluralName %>/<% if (logicalExclusion) { %>:active<% } %>', {}, {<% if (logicalExclusion) { %>
       getByState: {
         method: 'GET',
         params: {

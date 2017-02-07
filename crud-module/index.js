@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('util'), inflections = require('underscore.inflections'), s = require('underscore.string'), _ = require('lodash'), mkdirp = require('mkdirp'), yeoman = require('yeoman-generator');
+var util = require('util'), inflections = require('underscore.inflections'), s = require('underscore.string'), _ = require('lodash'), mkdirp = require('mkdirp'), yeoman = require('yeoman-generator'), fs = require('fs');
 
 var ModuleGenerator = yeoman.generators.Base.extend({
 	init: function () {
@@ -106,11 +106,31 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			message: 'Does your module will have Internationalization Support (i18n)?',
 			default: false
 		}, {
-			type: 'confirm',
-			name: 'addMenuItems',
-			message: 'Would you like to add the CRUD module links to a menu?',
-			default: true
-		}];
+      type: 'confirm',
+      name: 'generateEntityFields',
+      message: 'Would you like to generate entity fields?',
+      default: true
+    }, {
+      type: 'input',
+      name: 'fieldsFileName',
+      message: 'Considering that the file is in this directory. What the file name?',
+      when: function (response) {
+        return response.generateEntityFields == true;
+      },
+      validate: function (value) {
+        try {
+          JSON.parse(fs.readFileSync(value, 'utf8'));
+        } catch (exception) {
+          return 'File not found';
+        }
+        return true;
+      }
+    }, {
+      type: 'confirm',
+      name: 'addMenuItems',
+      message: 'Would you like to add the CRUD module links to a menu?',
+      default: true
+    }];
 
 		this.prompt(prompts, function (props) {
 			var clientFolders = {}, serverFolders = {};
@@ -130,6 +150,12 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 			this.refilterActives = props.refilterActives;
 			this.internationalization = props.internationalization;
 			this.addMenuItems = props.addMenuItems;
+      this.fieldsFileName = props.fieldsFileName;
+      if (this.fieldsFileName) {
+        var obj = JSON.parse(fs.readFileSync(this.fieldsFileName, 'utf8'));
+        this.fieldsJson = obj;
+        this.printModelFields = this.printModelFields();
+      }
 
 			done();
 		}.bind(this));
@@ -222,7 +248,21 @@ var ModuleGenerator = yeoman.generators.Base.extend({
 		// Add express module tests
 		this.template('tests/server/_.server.model.tests.js', 'modules/' + this.slugifiedPluralName + '/tests/server/' + this.slugifiedSingularName + '.server.model.tests.js');
 		this.template('tests/server/_.server.routes.tests.js', 'modules/' + this.slugifiedPluralName + '/tests/server/' + this.slugifiedSingularName + '.server.routes.tests.js');
-	}
+	},
+  printModelFields: function () {
+    var model = '';
+    if (this.fieldsFileName) {
+      for (var field in this.fieldsJson){
+        var fieldAttrs = this.fieldsJson[field];
+        model += ',\n'
+        model += field + ': {\n';
+        model += '    type: ' + fieldAttrs.type + ',\n';
+        model += '    required: \'' + fieldAttrs.required + '\'\n';
+        model += '  }';
+      }
+    }
+    return model;
+  }
 });
 
 module.exports = ModuleGenerator;

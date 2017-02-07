@@ -40,7 +40,7 @@ var <%= classifiedSingularName %>Schema = new Schema({
   active: {
     type: Boolean,
     default: true
-  }
+  }<% if (fieldsFileName) { %><%= printModelFields %><% } %>
 });
 
 mongoose.model('<%= classifiedSingularName %>', <%= classifiedSingularName %>Schema);
