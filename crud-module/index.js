@@ -154,7 +154,7 @@ var ModuleGenerator = yeoman.Base.extend({
       if (this.fieldsFileName) {
         var obj = JSON.parse(fs.readFileSync(this.fieldsFileName, 'utf8'));
         this.fieldsJson = obj;
-        this.printModelFields = this.printModelFields();
+        this.populateFields = [];
       }
 
       done();
@@ -257,31 +257,18 @@ var ModuleGenerator = yeoman.Base.extend({
         if (fieldAttrs.hasOwnProperty('modelProps')) {
           model += ',\n';
           model += '  ' + field + ': {';
-          var modelProps = fieldAttrs.modelProps;
-          for (var modelProp in modelProps) { // type, required, validate, etc...
-            propToString(modelProps[modelProp], modelProp, model);
-            if (typeof modelProps[modelProp] === 'object') {
-              model += '\n    ' + modelProp + ': {';
-              for (var propValue in modelProps[modelProp]) { // pattern
-                model += '\n      ' + propValue + ': ' + modelProps[modelProp][propValue] + ',';
-              }
-              // removing last comma
-              model = model.slice(0, -1);
-              model += '\n    },';
-            } else if (typeof modelProps[modelProp] === 'array') {
-
-            } else {
-              model += '\n    ' + modelProp + ': ' + modelProps[modelProp] + ',';
-            }
-          }
-          // removing last comma
+          model += propToString(fieldAttrs.modelProps);
           model = model.slice(0, -1);
           model += '\n  }';
+        }
+        if (fieldAttrs.hasOwnProperty('populate')) {
+          this.populateFields.push(fieldAttrs.populate);
         }
       }
     }
 
-    function propToString(modelProps, model) {
+    function propToString(modelProps) {
+      var model = '';
       for (var modelProp in modelProps) { // type, required, validate, etc...
         if (typeof modelProps[modelProp] === 'object') {
           model += '\n    ' + modelProp + ': {';
@@ -292,14 +279,66 @@ var ModuleGenerator = yeoman.Base.extend({
           model = model.slice(0, -1);
           model += '\n    },';
         } else if (Array.isArray(modelProps[modelProp]) && modelProps[modelProp].length == 1) {
-          propToString(modelProps[modelProp][0], model);
+          model += propToString(modelProps[modelProp][0], model);
         } else {
           model += '\n    ' + modelProp + ': ' + modelProps[modelProp] + ',';
         }
       }
+      return model;
     }
 
     return model;
+  },
+  getHtmlFields: function () {
+    var fields = '';
+    for (var field in this.fieldsJson) {
+      var fieldAttrs = this.fieldsJson[field];
+      fields += this.getHtmlField(fieldAttrs);
+    }
+    return fields;
+  },
+  getHtmlField: function (fieldProps) {
+    if (fieldProps && fieldProps.hasOwnProperty('viewProps')) {
+      switch (fieldProps.viewProps.fieldType) {
+        case 'text':
+          console.log(fieldProps.viewProps);
+          return this.getInputText(fieldProps);
+        default:
+          return '';
+      }
+    }
+    return '';
+  },
+  getInputText: function (fieldProps) {
+    if (fieldProps) {
+
+      return '\n      <md-input-container flex>' +
+      '\n        <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' +
+      this.getIconTag(fieldProps.viewProps) +
+      '\n        <input name="' + fieldProps.viewProps.name + '" type="text" ng-model="vm.itemType.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
+      // fieldProps.viewProps.hasOwnProperty('pattern') ? ' pattern="' + fieldProps.viewProps.pattern : '" ' +
+      fieldProps.viewProps.hasOwnProperty('maxlength') ? ' md-maxlength="' + fieldProps.viewProps.maxlength : '"' +
+      fieldProps.viewProps.hasOwnProperty('minlength') ? ' minlength="' + fieldProps.viewProps.minlength : '"' +
+      fieldProps.viewProps.hasOwnProperty('min') ? ' min="' + fieldProps.viewProps.min : '"' +
+      fieldProps.viewProps.hasOwnProperty('max') ? ' max="' + fieldProps.viewProps.max : '"' +
+      fieldProps.viewProps.required ? ' required' : '' + '>' +
+      '\n        <div ng-messages="vm.form.itemTypeForm.name.$error">' +
+      // fieldProps.viewProps.hasOwnProperty('patternMessage') ? '\n          <p ng-message="pattern" translate>Item type name is required.</p>' : '' +
+      fieldProps.viewProps.hasOwnProperty('maxlengthMessage') ? '\n          <p ng-message="maxlength" translate>Item type name is required.</p>' : '' +
+      fieldProps.viewProps.hasOwnProperty('minlengthMessage') ? '\n          <p ng-message="minlength" translate>Item type name is required.</p>' : '' +
+      fieldProps.viewProps.hasOwnProperty('minMessage') ? '\n          <p ng-message="min" translate>Item type name is required.</p>' : '' +
+      fieldProps.viewProps.hasOwnProperty('maxMessage') ? '\n          <p ng-message="max" translate>Item type name is required.</p>' : '' +
+      fieldProps.viewProps.required ? '\n          <p ng-message="required" translate>Item type name is required.</p>' : '' + '>' +
+      '\n        </div>' +
+      '\n      </md-input-container>';
+    }
+    return '';
+  },
+  getIconTag: function (viewProps) {
+    if (viewProps && viewProps.hasOwnProperty('icon')) {
+       return '\n        <md-icon md-font-set="material-icons">' + viewProps.icon + '</md-icon>';
+    }
+    return '';
   }
 });
 

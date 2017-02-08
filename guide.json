@@ -19,13 +19,14 @@
       "unique": "false"
     },
     "viewProps": {
-      "name": "Drink",
+      "name": "drink",
+      "displayName": "Drink",
       "fieldType": "text",
       "pattern": "/(\\d{2}) \\d{5}-\\d{4}/",
       "message": "'This is not a valid phone number!'" 
       // "fieldType": "radiobox" -> Requires enum
       // "fieldType": "checkbox" -> Requires enum or boolean
-      // "fieldType": "select" -> Requires enum or type Schema.Types.ObjectId
+      // "fieldType": "select" -> Requires enum or type Schema.ObjectId
       // "fieldType": "switch" -> Requires boolean
     }
   },
@@ -40,7 +41,8 @@
       "set": "v => Math.round(v)"
     },
     "viewProps": {
-      "name": "Ammount",
+      "name": "ammount",
+      "displayName": "Ammount",
       "fieldType": "number"
       // "fieldType": "slider" -> Requires min and max values and the field is a number
       // "sliderOptions": "md-vertical md-discrete"
@@ -51,7 +53,8 @@
       "type": "[{ type: String, enum: ['eggs', 'bacon'] }]",
     },
     "viewProps": {
-      "name": "Eat",
+      "name": "eat",
+      "displayName": "Eat",
       "fieldType": "checkbox",
       "disabled": "!vm.teste.ammount"
     }
@@ -64,16 +67,22 @@
       "min": "Date.now"
     },
     "viewProps": {
-      "name": "Date",
+      "name": "date",
+      "displayName": "Date",
       "fieldType": "date"
     }
   },
   "companion": {
     "modelProps": {
-      "type": "[Schema.Types.ObjectId]",
+      "type": "[{ type: Schema.Types.ObjectId, ref: 'User', required: true }]",
+    },
+    "populate": {
+      "path": "companion",
+      "select": "displayName"
     },
     "viewProps": {
-      "name": "Companion",
+      "name": "companion",
+      "displayName": "Companion",
       "fieldType": "select", // Requires to be array or objectid (or both)
       "search": "true",
       "multiple": "true"
@@ -81,10 +90,16 @@
   },
   "companion2": {
     "modelProps": {
-      "type": "Schema.Types.ObjectId",
+      "type": "Schema.ObjectId",
+      "ref": "'User'"
+    },
+    "populate": {
+      "path": "companion2",
+      "select": "displayName"
     },
     "viewProps": {
-      "name": "Companion 2",
+      "name": "companion2",
+      "displayName": "Companion 2",
       "fieldType": "select", // Requires to be array or objectid (or both)
       "search": "false",
       "multiple": "false",
@@ -94,10 +109,15 @@
   },
   "companion3": {
     "modelProps": {
-      "type": "[Schema.Types.ObjectId]",
+      "type": "[{ type: Schema.Types.ObjectId, ref: 'User', required: true }]",
+    },
+    "populate": {
+      "path": "companion3",
+      "select": "displayName"
     },
     "viewProps": {
-      "name": "Companion 3",
+      "name": "companion3",
+      "displayName": "Companion 3",
       "fieldType": "gridModal", // Requires to be array or objectid (or both)
       "search": "true",
       "multiple": "true",
@@ -112,7 +132,8 @@
       "default": "false"
     },
     "viewProps": {
-      "name": "Repeat Every Day",
+      "name": "repeat",
+      "displayName": "Repeat Every Day",
       "fieldType": "switch"
     }
   }

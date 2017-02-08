@@ -19,7 +19,8 @@
       "unique": "false"
     },
     "viewProps": {
-      "name": "Drink",
+      "name": "drink",
+      "displayName": "Drink",
       "fieldType": "text",
       "pattern": "/(\\d{2}) \\d{5}-\\d{4}/",
       "message": "'This is not a valid phone number!'" 
@@ -36,7 +37,8 @@
       "set": "v => Math.round(v)"
     },
     "viewProps": {
-      "name": "Ammount",
+      "name": "ammount",
+      "displayName": "Ammount",
       "fieldType": "number"
     }
   },
@@ -45,7 +47,8 @@
       "type": "[{ type: String, enum: ['eggs', 'bacon'] }]"
     },
     "viewProps": {
-      "name": "Eat",
+      "name": "eat",
+      "displayName": "Eat",
       "fieldType": "checkbox",
       "disabled": "!vm.teste.ammount"
     }
@@ -58,17 +61,22 @@
       "min": "Date.now"
     },
     "viewProps": {
-      "name": "Date",
+      "name": "date",
+      "displayName": "Date",
       "fieldType": "date"
     }
   },
   "companion": {
     "modelProps": {
-      "type": "[Schema.Types.ObjectId]",
-      "ref": "'User'"
+      "type": "[{ type: Schema.Types.ObjectId, ref: 'User', required: true }]"
+    },
+    "populate": {
+      "path": "companion",
+      "select": "displayName"
     },
     "viewProps": {
-      "name": "Companion",
+      "name": "companion",
+      "displayName": "Companion",
       "fieldType": "select", 
       "search": "true",
       "multiple": "true"
@@ -79,8 +87,13 @@
       "type": "Schema.Types.ObjectId",
       "ref": "'User'"
     },
+    "populate": {
+      "path": "companion2",
+      "select": "displayName"
+    },
     "viewProps": {
-      "name": "Companion 2",
+      "name": "companion2",
+      "displayName": "Companion 2",
       "fieldType": "select", 
       "search": "false",
       "multiple": "false",
@@ -90,11 +103,15 @@
   },
   "companion3": {
     "modelProps": {
-      "type": "[Schema.Types.ObjectId]",
-      "ref": "'User'"
+      "type": "[{ type: Schema.Types.ObjectId, ref: 'User', required: true }]"
+    },
+    "populate": {
+      "path": "companion3",
+      "select": "displayName"
     },
     "viewProps": {
-      "name": "Companion 3",
+      "name": "companion3",
+      "displayName": "Companion 3",
       "fieldType": "gridModal", 
       "search": "true",
       "multiple": "true",
@@ -109,7 +126,8 @@
       "default": "false"
     },
     "viewProps": {
-      "name": "Repeat Every Day",
+      "name": "repeat",
+      "displayName": "Repeat Every Day",
       "fieldType": "switch"
     }
   }

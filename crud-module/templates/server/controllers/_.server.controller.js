@@ -95,30 +95,50 @@ exports.delete = function(req, res) {
  * List of <%= humanizedPluralName %>
  */
 exports.list = function(req, res) {
-  <%= classifiedSingularName %>.find().sort('-created').populate('user', 'displayName').exec(function(err, <%= camelizedPluralName %>) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(<%= camelizedPluralName %>);
-    }
-  });
+  <%= classifiedSingularName %>
+    .find()
+    .sort('-created')
+    .populate({
+      path: 'user',
+      select: 'displayName'
+    }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
+      <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
+      <%- 'select: \'' + value.select + '\'' %>
+    <%- '}' %><% }})} %>)
+    .exec(function(err, <%= camelizedPluralName %>) {
+      if (err) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
+      } else {
+        res.jsonp(<%= camelizedPluralName %>);
+      }
+    });
 };
 
 /**
  * List of active <%= humanizedPluralName %>
  */
 exports.listActive = function(req, res) {
-  <%= classifiedSingularName %>.find({'active': true}).sort('-created').populate('user', 'displayName').exec(function(err, <%= camelizedPluralName %>) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(<%= camelizedPluralName %>);
-    }
-  });
+  <%= classifiedSingularName %>
+    .find({'active': true})
+    .sort('-created')
+    .populate({
+      path: 'user',
+      select: 'displayName'
+    }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
+      <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
+      <%- 'select: \'' + value.select + '\'' %>
+    <%- '}' %><% }})} %>)
+    .exec(function(err, <%= camelizedPluralName %>) {
+      if (err) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
+      } else {
+        res.jsonp(<%= camelizedPluralName %>);
+      }
+    });
 };
 
 /**
@@ -132,15 +152,26 @@ exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {
     });
   }
 
-  <%= classifiedSingularName %>.findById(id).populate('user', 'displayName').populate('modified.user', 'displayName').exec(function (err, <%= camelizedSingularName %>) {
-    if (err) {
-      return next(err);
-    } else if (!<%= camelizedSingularName %>) {
-      return res.status(404).send({
-        message: 'No <%= humanizedSingularName %> with that identifier has been found'
-      });
-    }
-    req.<%= camelizedSingularName %> = <%= camelizedSingularName %>;
-    next();
-  });
+  <%= classifiedSingularName %>.findById(id)
+    .populate({
+      path: 'user',
+      select: 'displayName'
+    }, {
+      path: 'modified.user',
+      select: 'displayName'
+    }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
+      <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
+      <%- 'select: \'' + value.select + '\'' %>
+    <%- '}' %><% }})} %>
+    .exec(function (err, <%= camelizedSingularName %>) {
+      if (err) {
+        return next(err);
+      } else if (!<%= camelizedSingularName %>) {
+        return res.status(404).send({
+          message: 'No <%= humanizedSingularName %> with that identifier has been found'
+        });
+      }
+      req.<%= camelizedSingularName %> = <%= camelizedSingularName %>;
+      next();
+    });
 };

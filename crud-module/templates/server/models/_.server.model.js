@@ -23,7 +23,7 @@ var <%= classifiedSingularName %>Schema = new Schema({
   user: {
     type: Schema.ObjectId,
     ref: 'User'
-  }<% if (fieldsFileName) { %><%- printModelFields %><% } %>,
+  }<% if (fieldsFileName) { %><%- printModelFields() %><% } %>,
   modified: [{
     _id: false,
     date: {
