@@ -291,9 +291,29 @@ var ModuleGenerator = yeoman.Base.extend({
   },
   getHtmlFields: function () {
     var fields = '';
+    var countPairs = 0;
+    var tagWasClosed = true;
     for (var field in this.fieldsJson) {
       var fieldAttrs = this.fieldsJson[field];
-      fields += this.getHtmlField(fieldAttrs);
+      if (fieldAttrs && fieldAttrs.hasOwnProperty('viewProps')) {
+        if (countPairs == 0 || this.isCheckBoxMultiple(fieldAttrs)) {
+          if (tagWasClosed == false) {
+            fields += '\n    </div>';
+          }
+          fields += this.getInputRowOppening();
+          tagWasClosed = false;
+        }
+        fields += this.getHtmlField(fieldAttrs);
+        countPairs++;
+        if (countPairs == 2 || this.isCheckBoxMultiple(fieldAttrs)) {
+          fields += '\n    </div>';
+          countPairs = 0;
+          tagWasClosed = true;
+        }
+      }
+    }
+    if (tagWasClosed == false) {
+      fields += '\n    </div>';
     }
     return fields;
   },
@@ -301,44 +321,106 @@ var ModuleGenerator = yeoman.Base.extend({
     if (fieldProps && fieldProps.hasOwnProperty('viewProps')) {
       switch (fieldProps.viewProps.fieldType) {
         case 'text':
-          console.log(fieldProps.viewProps);
-          return this.getInputText(fieldProps);
+        case 'number':
+          return this.getInput(fieldProps);
+        case 'checkbox':
+          return this.getCheckbox(fieldProps);
         default:
           return '';
       }
     }
     return '';
   },
-  getInputText: function (fieldProps) {
+  getInput: function (fieldProps) {
     if (fieldProps) {
-
+      var inputProps = this.getInputProps(fieldProps);
       return '\n      <md-input-container flex>' +
       '\n        <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' +
       this.getIconTag(fieldProps.viewProps) +
-      '\n        <input name="' + fieldProps.viewProps.name + '" type="text" ng-model="vm.itemType.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
-      // fieldProps.viewProps.hasOwnProperty('pattern') ? ' pattern="' + fieldProps.viewProps.pattern : '" ' +
-      fieldProps.viewProps.hasOwnProperty('maxlength') ? ' md-maxlength="' + fieldProps.viewProps.maxlength : '"' +
-      fieldProps.viewProps.hasOwnProperty('minlength') ? ' minlength="' + fieldProps.viewProps.minlength : '"' +
-      fieldProps.viewProps.hasOwnProperty('min') ? ' min="' + fieldProps.viewProps.min : '"' +
-      fieldProps.viewProps.hasOwnProperty('max') ? ' max="' + fieldProps.viewProps.max : '"' +
-      fieldProps.viewProps.required ? ' required' : '' + '>' +
-      '\n        <div ng-messages="vm.form.itemTypeForm.name.$error">' +
-      // fieldProps.viewProps.hasOwnProperty('patternMessage') ? '\n          <p ng-message="pattern" translate>Item type name is required.</p>' : '' +
-      fieldProps.viewProps.hasOwnProperty('maxlengthMessage') ? '\n          <p ng-message="maxlength" translate>Item type name is required.</p>' : '' +
-      fieldProps.viewProps.hasOwnProperty('minlengthMessage') ? '\n          <p ng-message="minlength" translate>Item type name is required.</p>' : '' +
-      fieldProps.viewProps.hasOwnProperty('minMessage') ? '\n          <p ng-message="min" translate>Item type name is required.</p>' : '' +
-      fieldProps.viewProps.hasOwnProperty('maxMessage') ? '\n          <p ng-message="max" translate>Item type name is required.</p>' : '' +
-      fieldProps.viewProps.required ? '\n          <p ng-message="required" translate>Item type name is required.</p>' : '' + '>' +
+      '\n        <input name="' + fieldProps.viewProps.name + '" type="' + fieldProps.viewProps.fieldType + '" ng-model="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
+      inputProps.props.patternProp +
+      inputProps.props.maxlengthProp +
+      inputProps.props.minlengthProp +
+      inputProps.props.minProp +
+      inputProps.props.maxProp +
+      inputProps.props.requiredProp + '>' +
+      '\n        <div ng-messages="vm.form.' + this.camelizedSingularName + 'Form.name.$error">' +
+      inputProps.messages.patternMessage +
+      inputProps.messages.maxlengthMessage +
+      inputProps.messages.minlengthMessage +
+      inputProps.messages.minMessage +
+      inputProps.messages.maxMessage +
+      inputProps.messages.requiredMessage +
       '\n        </div>' +
       '\n      </md-input-container>';
     }
     return '';
+  },
+  getCheckbox: function (fieldProps) {
+    if (fieldProps) {
+      var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
+      var checkboxes = '';
+
+      if (fieldProps.viewProps.checkboxType == 'multiple') {
+        checkboxes += '\n      <p class="md-subhead" flex="100">' + fieldProps.viewProps.displayName + '</p>';
+        var selectedName = 'selected' + s(inflections.singularize(fieldProps.viewProps.name)).classify().value();
+        var toggleSelectedName = 'Selected' + s(inflections.singularize(fieldProps.viewProps.name)).classify().value();
+
+        _.forEach(JSON.parse(fieldProps.viewProps.options), function (name, value) {
+          checkboxes += '\n      <div flex="' + fieldProps.viewProps.colSize + '">';
+          checkboxes += '\n        <md-checkbox name="' + selectedName + '[]"' +
+            ' value="' + value + '"' +
+            ' ng-checked="vm.' + selectedName + '.indexOf(\'' + value + '\') > -1"' +
+            ' ng-click="vm.toggle' + toggleSelectedName + '(\'' + value + '\')"' +
+            disabled + '>' +
+            '\n          <span translate>' + name + '</span>' +
+            '\n        </md-checkbox>';
+          checkboxes += '\n      </div>';
+        });
+      } else {
+        checkboxes += '\n      <md-checkbox ng-model="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' + disabled + '>' +
+          '\n        <span translate>' + fieldProps.viewProps.displayName + '</span>' +
+          '\n      </md-checkbox>';
+      }
+      return checkboxes;
+    }
   },
   getIconTag: function (viewProps) {
     if (viewProps && viewProps.hasOwnProperty('icon')) {
        return '\n        <md-icon md-font-set="material-icons">' + viewProps.icon + '</md-icon>';
     }
     return '';
+  },
+  getInputRowOppening: function () {
+    return '\n    <div layout-gt-sm="row" layout-wrap>';
+  },
+  getInputProps: function (fieldProps) {
+    if (fieldProps) {
+      return {
+        props: {
+          patternProp: fieldProps.viewProps.hasOwnProperty('pattern') ? ' pattern="' + fieldProps.viewProps.pattern + '"' : '',
+          maxlengthProp: fieldProps.viewProps.hasOwnProperty('maxlength') ? ' md-maxlength="' + fieldProps.viewProps.maxlength + '"' : '',
+          minlengthProp: fieldProps.viewProps.hasOwnProperty('minlength') ? ' minlength="' + fieldProps.viewProps.minlength + '"' : '',
+          minProp: fieldProps.viewProps.hasOwnProperty('min') ? ' min="' + fieldProps.viewProps.min + '"' : '',
+          maxProp: fieldProps.viewProps.hasOwnProperty('max') ? ' max="' + fieldProps.viewProps.max + '"' : '',
+          requiredProp: fieldProps.viewProps.hasOwnProperty('required') && fieldProps.viewProps.required == true ? ' required' : ''
+        },
+        messages: {
+          patternMessage: fieldProps.viewProps.hasOwnProperty('patternMessage') ? '\n          <p ng-message="pattern" translate>' + fieldProps.viewProps.patternMessage + '</p>' : '',
+          maxlengthMessage: fieldProps.viewProps.hasOwnProperty('maxlengthMessage') ? '\n          <p ng-message="maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>' : '',
+          minlengthMessage: fieldProps.viewProps.hasOwnProperty('minlengthMessage') ? '\n          <p ng-message="minlength" translate>' + fieldProps.viewProps.minlengthMessage + '</p>' : '',
+          minMessage: fieldProps.viewProps.hasOwnProperty('minMessage') ? '\n          <p ng-message="min" translate>' + fieldProps.viewProps.minMessage + '</p>' : '',
+          maxMessage: fieldProps.viewProps.hasOwnProperty('maxMessage') ? '\n          <p ng-message="max" translate>' + fieldProps.viewProps.maxMessage + '</p>' : '',
+          requiredMessage: fieldProps.viewProps.hasOwnProperty('requiredMessage') ? '\n          <p ng-message="required" translate>' + fieldProps.viewProps.requiredMessage + '</p>' : ''
+        }
+      };
+    }
+  },
+  isCheckBoxMultiple: function (fieldAttrs) {
+    return fieldAttrs != null &&
+      fieldAttrs.hasOwnProperty('viewProps') &&
+      fieldAttrs.viewProps.fieldType == 'checkbox' &&
+      fieldAttrs.viewProps.checkboxType == 'multiple';
   }
 });
 

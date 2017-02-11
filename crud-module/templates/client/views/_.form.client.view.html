@@ -4,7 +4,7 @@
     <md-divider></md-divider>
   </div>
   <form name="vm.form.<%= camelizedSingularName %>Form" layout="column" ng-submit="vm.save(vm.form.<%= camelizedSingularName %>Form.$valid)" novalidate>
-    <div layout="row" layout-xs="column">
+    <div layout-gt-sm="row" layout-wrap>
       <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Name</label>
         <md-icon md-font-set="material-icons">person</md-icon>
@@ -12,11 +12,6 @@
         <div ng-messages="vm.form.<%= camelizedSingularName %>Form.name.$error">
           <p ng-message="required"<% if (internationalization) { %> translate<% } %>><%= humanizedSingularName %> name is required.</p>
         </div>
-      </md-input-container>
-      <md-input-container flex>
-        <md-checkbox ng-model="vm.<%= camelizedSingularName %>.canBeEquiped">
-          <span<% if (internationalization) { %> translate<% } %>>Can Be Equiped</span>
-        </md-checkbox>
       </md-input-container>
     </div><%- getHtmlFields() %>
     <div layout="row" layout-align="end center">
