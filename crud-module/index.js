@@ -325,6 +325,8 @@ var ModuleGenerator = yeoman.Base.extend({
           return this.getInput(fieldProps);
         case 'checkbox':
           return this.getCheckbox(fieldProps);
+        case 'select':
+          return this.getSelectOption(fieldProps);
         default:
           return '';
       }
@@ -334,9 +336,19 @@ var ModuleGenerator = yeoman.Base.extend({
   getInput: function (fieldProps) {
     if (fieldProps) {
       var inputProps = this.getInputProps(fieldProps);
+      var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
+      '\n        <div ng-messages="vm.form.' + this.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
+      (inputProps.messages.hasOwnProperty('patternMessage') ? inputProps.messages.patternMessage : '') +
+      (inputProps.messages.hasOwnProperty('maxlengthMessage') ? inputProps.messages.maxlengthMessage : '') +
+      (inputProps.messages.hasOwnProperty('minlengthMessage') ? inputProps.messages.minlengthMessage : '') +
+      (inputProps.messages.hasOwnProperty('minMessage') ? inputProps.messages.minMessage : '') +
+      (inputProps.messages.hasOwnProperty('maxMessage') ? inputProps.messages.maxMessage : '') +
+      (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
+      '\n        </div>' : '';
+
       return '\n      <md-input-container flex>' +
       '\n        <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' +
-      this.getIconTag(fieldProps.viewProps) +
+      this.getIconTag(fieldProps.viewProps, true) +
       '\n        <input name="' + fieldProps.viewProps.name + '" type="' + fieldProps.viewProps.fieldType + '" ng-model="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
       inputProps.props.patternProp +
       inputProps.props.maxlengthProp +
@@ -344,14 +356,7 @@ var ModuleGenerator = yeoman.Base.extend({
       inputProps.props.minProp +
       inputProps.props.maxProp +
       inputProps.props.requiredProp + '>' +
-      '\n        <div ng-messages="vm.form.' + this.camelizedSingularName + 'Form.name.$error">' +
-      inputProps.messages.patternMessage +
-      inputProps.messages.maxlengthMessage +
-      inputProps.messages.minlengthMessage +
-      inputProps.messages.minMessage +
-      inputProps.messages.maxMessage +
-      inputProps.messages.requiredMessage +
-      '\n        </div>' +
+      messages +
       '\n      </md-input-container>';
     }
     return '';
@@ -362,21 +367,21 @@ var ModuleGenerator = yeoman.Base.extend({
       var checkboxes = '';
 
       if (fieldProps.viewProps.checkboxType == 'multiple') {
-        checkboxes += '\n      <p class="md-subhead" flex="100">' + fieldProps.viewProps.displayName + '</p>';
-        var selectedName = 'selected' + s(inflections.singularize(fieldProps.viewProps.name)).classify().value();
-        var toggleSelectedName = 'Selected' + s(inflections.singularize(fieldProps.viewProps.name)).classify().value();
+        checkboxes += '\n      <p class="md-subhead" flex="100">' + this.getIconTag(fieldProps.viewProps, false) + fieldProps.viewProps.displayName + '</p>';
+        var selectedName = 'selected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+        var toggleSelectedName = 'Selected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+        var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
+        var humanizedName = s(inflections.pluralize(fieldProps.viewProps.name)).humanize().value();
 
-        _.forEach(JSON.parse(fieldProps.viewProps.options), function (name, value) {
-          checkboxes += '\n      <div flex="' + fieldProps.viewProps.colSize + '">';
-          checkboxes += '\n        <md-checkbox name="' + selectedName + '[]"' +
-            ' value="' + value + '"' +
-            ' ng-checked="vm.' + selectedName + '.indexOf(\'' + value + '\') > -1"' +
-            ' ng-click="vm.toggle' + toggleSelectedName + '(\'' + value + '\')"' +
-            disabled + '>' +
-            '\n          <span translate>' + name + '</span>' +
-            '\n        </md-checkbox>';
-          checkboxes += '\n      </div>';
-        });
+        checkboxes += '\n      <div flex="' + fieldProps.viewProps.colSize + '" ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + '">';
+        checkboxes += '\n        <md-checkbox name="' + selectedName + '[]"' +
+          ' value="{{' + fieldProps.viewProps.name + '}}"' +
+          ' ng-checked="vm.' + selectedName + '.indexOf(' + fieldProps.viewProps.name + ') > -1"' +
+          ' ng-click="vm.toggle' + toggleSelectedName + '(' + fieldProps.viewProps.name + ')"' +
+          disabled + '>' +
+          '\n          <span>' + humanizedName + '</span>' +
+          '\n        </md-checkbox>';
+        checkboxes += '\n      </div>';
       } else {
         checkboxes += '\n      <md-checkbox ng-model="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' + disabled + '>' +
           '\n        <span translate>' + fieldProps.viewProps.displayName + '</span>' +
@@ -385,9 +390,63 @@ var ModuleGenerator = yeoman.Base.extend({
       return checkboxes;
     }
   },
-  getIconTag: function (viewProps) {
+  getSelectOption: function (fieldProps) {
+    if (fieldProps) {
+      var inputProps = this.getInputProps(fieldProps);
+
+      var searchTag = fieldProps.viewProps.hasOwnProperty('search') && fieldProps.viewProps.search == true ?
+        '\n          <md-select-header class="select-search-header">' +
+        '\n            <input ng-model="vm.selectOptSearchTerm" type="search" placeholder="{{ \'Search for a ' + fieldProps.viewProps.displayName + '...\' | translate }}" class="select-search-searchbox md-text">' +
+        '\n          </md-select-header>' : '';
+
+      var emptyOption = !fieldProps.viewProps.hasOwnProperty('required') || fieldProps.viewProps.required == false ?
+        '\n          <md-option><em translate>None</em></md-option>' : '';
+
+      var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
+      '\n        <div ng-messages="vm.form.' + this.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
+      (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
+      '\n        </div>' : '';
+
+      return '\n      <md-input-container flex>' +
+        '\n        <label>' + fieldProps.viewProps.displayName + '</label>' +
+        this.getIconTag(fieldProps.viewProps, true) +
+        '\n        <md-select ng-model="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '" md-on-close="vm.clearSelectOptSearchTerm()" data-md-container-class="select-search"' +
+        inputProps.props.multipleProp +
+        inputProps.props.requiredProp +
+        '>' +
+        searchTag +
+        emptyOption +
+        this.getOptGroup(fieldProps) +
+        '\n        </md-select>' +
+        messages +
+        '\n      </md-input-container>';
+    }
+  },
+  getOptGroup: function(fieldProps) {
+    if (fieldProps) {
+      var pluralizedName = inflections.pluralize(fieldProps.viewProps.name);
+      var pluralizedDisplayNameName = inflections.pluralize(fieldProps.viewProps.displayName);
+
+      if (fieldProps.viewProps.hasOwnProperty('required') && fieldProps.viewProps.required == true) {
+        return '\n          <md-optgroup label="' + pluralizedDisplayNameName + '">' +
+          '\n            <md-option ng-value="' + fieldProps.viewProps.name + '._id" ng-selected="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + fieldProps.viewProps.name + '._id) > -1" ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
+          '\n              {{' + fieldProps.viewProps.name + '.' + fieldProps.viewProps.objectIdDisplayName + '}}' +
+          '\n            </md-option>' +
+          '\n          </md-optgroup>';
+      } else {
+        return '\n          <md-option ng-value="' + fieldProps.viewProps.name + '._id" ng-selected="vm.' + this.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + fieldProps.viewProps.name + '._id) > -1" ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
+          '\n            {{' + fieldProps.viewProps.name + '.' + fieldProps.viewProps.objectIdDisplayName + '}}' +
+          '\n          </md-option>';
+      }
+    }
+  },
+  getIconTag: function (viewProps, ident) {
     if (viewProps && viewProps.hasOwnProperty('icon')) {
-       return '\n        <md-icon md-font-set="material-icons">' + viewProps.icon + '</md-icon>';
+      if (ident) {
+        return '\n        <md-icon md-font-set="material-icons">' + viewProps.icon + '</md-icon>';
+      } else {
+        return '<md-icon md-font-set="material-icons">' + viewProps.icon + '</md-icon> ';
+      }
     }
     return '';
   },
@@ -396,6 +455,25 @@ var ModuleGenerator = yeoman.Base.extend({
   },
   getInputProps: function (fieldProps) {
     if (fieldProps) {
+      var messages = {};
+      if (fieldProps.viewProps.hasOwnProperty('patternMessage')) {
+        messages.patternMessage = '\n          <p ng-message="pattern" translate>' + fieldProps.viewProps.patternMessage + '</p>';
+      }
+      if (fieldProps.viewProps.hasOwnProperty('maxlengthMessage')) {
+        messages.maxlengthMessage = '\n          <p ng-message="maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>';
+      }
+      if (fieldProps.viewProps.hasOwnProperty('minlengthMessage')) {
+        messages.minlengthMessage = '\n          <p ng-message="minlength" translate>' + fieldProps.viewProps.minlengthMessage + '</p>';
+      }
+      if (fieldProps.viewProps.hasOwnProperty('minMessage')) {
+        messages.minMessage = '\n          <p ng-message="min" translate>' + fieldProps.viewProps.minMessage + '</p>';
+      }
+      if (fieldProps.viewProps.hasOwnProperty('maxMessage')) {
+        messages.maxMessage = '\n          <p ng-message="max" translate>' + fieldProps.viewProps.maxMessage + '</p>';
+      }
+      if (fieldProps.viewProps.hasOwnProperty('requiredMessage')) {
+        messages.requiredMessage = '\n          <p ng-message="required" translate>' + fieldProps.viewProps.requiredMessage + '</p>';
+      }
       return {
         props: {
           patternProp: fieldProps.viewProps.hasOwnProperty('pattern') ? ' pattern="' + fieldProps.viewProps.pattern + '"' : '',
@@ -403,16 +481,10 @@ var ModuleGenerator = yeoman.Base.extend({
           minlengthProp: fieldProps.viewProps.hasOwnProperty('minlength') ? ' minlength="' + fieldProps.viewProps.minlength + '"' : '',
           minProp: fieldProps.viewProps.hasOwnProperty('min') ? ' min="' + fieldProps.viewProps.min + '"' : '',
           maxProp: fieldProps.viewProps.hasOwnProperty('max') ? ' max="' + fieldProps.viewProps.max + '"' : '',
-          requiredProp: fieldProps.viewProps.hasOwnProperty('required') && fieldProps.viewProps.required == true ? ' required' : ''
+          requiredProp: fieldProps.viewProps.hasOwnProperty('required') && fieldProps.viewProps.required == true ? ' required' : '',
+          multipleProp: fieldProps.viewProps.hasOwnProperty('multiple') && fieldProps.viewProps.multiple == true ? ' multiple' : ''
         },
-        messages: {
-          patternMessage: fieldProps.viewProps.hasOwnProperty('patternMessage') ? '\n          <p ng-message="pattern" translate>' + fieldProps.viewProps.patternMessage + '</p>' : '',
-          maxlengthMessage: fieldProps.viewProps.hasOwnProperty('maxlengthMessage') ? '\n          <p ng-message="maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>' : '',
-          minlengthMessage: fieldProps.viewProps.hasOwnProperty('minlengthMessage') ? '\n          <p ng-message="minlength" translate>' + fieldProps.viewProps.minlengthMessage + '</p>' : '',
-          minMessage: fieldProps.viewProps.hasOwnProperty('minMessage') ? '\n          <p ng-message="min" translate>' + fieldProps.viewProps.minMessage + '</p>' : '',
-          maxMessage: fieldProps.viewProps.hasOwnProperty('maxMessage') ? '\n          <p ng-message="max" translate>' + fieldProps.viewProps.maxMessage + '</p>' : '',
-          requiredMessage: fieldProps.viewProps.hasOwnProperty('requiredMessage') ? '\n          <p ng-message="required" translate>' + fieldProps.viewProps.requiredMessage + '</p>' : ''
-        }
+        messages: messages
       };
     }
   },
@@ -421,6 +493,75 @@ var ModuleGenerator = yeoman.Base.extend({
       fieldAttrs.hasOwnProperty('viewProps') &&
       fieldAttrs.viewProps.fieldType == 'checkbox' &&
       fieldAttrs.viewProps.checkboxType == 'multiple';
+  },
+  getControllerFieldsProps: function () {
+    var controllerAttrs = '';
+    var controllerMethods = '';
+    for (var field in this.fieldsJson) {
+      var fieldAttrs = this.fieldsJson[field];
+      if (fieldAttrs && fieldAttrs.hasOwnProperty('viewProps')) {
+        controllerAttrs += this.getControllerFieldAttr(fieldAttrs);
+        controllerMethods += this.getControllerFieldMethod(fieldAttrs);
+      }
+    }
+    return { controllerAttrs: controllerAttrs, controllerMethods: controllerMethods };
+  },
+  getControllerFieldAttr: function (fieldProps) {
+    if (fieldProps) {
+      switch (fieldProps.viewProps.fieldType) {
+        case 'checkbox':
+          return this.getCheckboxControllerAttr(fieldProps);
+        case 'select':
+        default:
+          return '';
+      }
+    }
+  },
+  getControllerFieldMethod: function (fieldProps) {
+    if (fieldProps) {
+      switch (fieldProps.viewProps.fieldType) {
+        case 'checkbox':
+          return this.getCheckboxControllerMethod(fieldProps);
+        case 'select':
+        default:
+          return '';
+      }
+    }
+  },
+  getCheckboxControllerAttr: function (fieldProps) {
+    if (fieldProps) {
+      var checkboxControllerAttr = '';
+      if (fieldProps.viewProps.checkboxType == 'multiple') {
+        var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
+        var selectedName = 'selected' + s(pluralizedName).classify().value();
+        var toggleSelectedName = 'toggleSelected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+        checkboxControllerAttr += '\n    vm.' + pluralizedName + ' = getEnumValues(' + fieldProps.viewProps.name + ');';
+        checkboxControllerAttr += '\n    vm.' + selectedName + ' = [];';
+        checkboxControllerAttr += '\n    vm.' + toggleSelectedName + ' = ' + toggleSelectedName + ';';
+      }
+      return checkboxControllerAttr;
+    }
+  },
+  getCheckboxControllerMethod: function (fieldProps) {
+    if (fieldProps) {
+      var checkboxControllerMethod = '';
+      if (fieldProps.viewProps.checkboxType == 'multiple') {
+        var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+        var selectedName = 'selected' + pluralizedName;
+        var toggleSelectedName = 'toggleSelected' + pluralizedName;
+
+        checkboxControllerMethod += '\n    function ' + toggleSelectedName + '(value) {';
+        checkboxControllerMethod += '\n      var idx = vm.' + selectedName + '.indexOf(value);';
+
+        checkboxControllerMethod += '\n      if (idx > -1) {';
+        checkboxControllerMethod += '\n        vm.' + selectedName + '.splice(idx, 1);';
+        checkboxControllerMethod += '\n      } else {';
+        checkboxControllerMethod += '\n        vm.' + selectedName + '.push(value);';
+        checkboxControllerMethod += '\n      }';
+        checkboxControllerMethod += '\n    }';
+      }
+      return checkboxControllerMethod;
+    }
   }
 });
 

@@ -21,7 +21,8 @@
 
     $translatePartialLoader.addPart('<%= slugifiedPluralName %>');
     $translate.refresh();
-<% } %><% if (logicalExclusion) { %>
+<% } %><%- getControllerFieldsProps().controllerAttrs %><% if (logicalExclusion) { %>
+
     // Change activation state of an existing <%= humanizedSingularName %>
     function changeState(ev) {
       DialogService.showConfirmInactivation(ev, function (option) {
@@ -35,6 +36,7 @@
         }
       });
     }<% } else { %>
+
     // Remove existing <%= humanizedSingularName %>
     function remove(ev) {
       DialogService.showConfirmDeletion(ev, function (option) {
@@ -73,5 +75,6 @@
         $log.error(res.data.message);
       }
     }
+<%- getControllerFieldsProps().controllerMethods %>
   }
 }());
