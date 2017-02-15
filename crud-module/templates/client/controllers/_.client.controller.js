@@ -21,7 +21,7 @@
 
     $translatePartialLoader.addPart('<%= slugifiedPluralName %>');
     $translate.refresh();
-<% } %><%- getControllerFieldsProps().controllerAttrs %><% if (logicalExclusion) { %>
+<% } %><%- controllerAttrs %><% if (logicalExclusion) { %>
 
     // Change activation state of an existing <%= humanizedSingularName %>
     function changeState(ev) {
@@ -75,6 +75,6 @@
         $log.error(res.data.message);
       }
     }
-<%- getControllerFieldsProps().controllerMethods %>
+<%- controllerMethods %>
   }
 }());

@@ -13,7 +13,7 @@
           <p ng-message="required"<% if (internationalization) { %> translate<% } %>><%= humanizedSingularName %> name is required.</p>
         </div>
       </md-input-container>
-    </div><%- getHtmlFields() %>
+    </div><%- formFields %>
     <div layout="row" layout-align="end center">
       <md-button type="button" class="md-raised md-warn" go-back-btn>
         <md-icon md-font-set="material-icons">cancel</md-icon><% if (internationalization) { %>
