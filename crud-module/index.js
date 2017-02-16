@@ -332,7 +332,7 @@ var ModuleGenerator = yeoman.Base.extend({
       for (var field in _this.fieldsJson) {
         var fieldAttrs = _this.fieldsJson[field];
         if (fieldAttrs && fieldAttrs.hasOwnProperty('viewProps')) {
-          if (countPairs == 0 || isCheckBoxMultiple(fieldAttrs)) {
+          if (countPairs == 0 || isSingleFieldLine(fieldAttrs)) {
             if (tagWasClosed == false) {
               fields += '\n    </div>';
             }
@@ -341,7 +341,7 @@ var ModuleGenerator = yeoman.Base.extend({
           }
           fields += getHtmlField(fieldAttrs);
           countPairs++;
-          if (countPairs == 2 || isCheckBoxMultiple(fieldAttrs)) {
+          if (countPairs == 2 || isSingleFieldLine(fieldAttrs)) {
             fields += '\n    </div>';
             countPairs = 0;
             tagWasClosed = true;
@@ -363,6 +363,8 @@ var ModuleGenerator = yeoman.Base.extend({
           return getCheckbox(fieldProps);
         case 'select':
           return getSelectOption(fieldProps);
+        case 'switch':
+          return getSwitch(fieldProps);
         default:
           return '';
       }
@@ -400,7 +402,7 @@ var ModuleGenerator = yeoman.Base.extend({
       var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
       var checkboxes = '';
 
-      if (fieldProps.viewProps.checkboxType == 'multiple') {
+      if (fieldProps.viewProps.hasOwnProperty('checkboxType') && fieldProps.viewProps.checkboxType == 'multiple') {
         checkboxes += '\n      <p class="md-subhead" flex="100">' + getIconTag(fieldProps.viewProps, false) + fieldProps.viewProps.displayName + '</p>';
         var selectedName = 'selected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
         var toggleSelectedName = 'Selected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
@@ -418,16 +420,25 @@ var ModuleGenerator = yeoman.Base.extend({
         checkboxes += '\n      </div>';
       } else {
         checkboxes += '\n      <md-checkbox ng-model="vm.' + _this.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' + disabled + '>' +
-            '\n        <span translate>' + fieldProps.viewProps.displayName + '</span>' +
+            '\n        <span>' + fieldProps.viewProps.displayName + '</span>' +
             '\n      </md-checkbox>';
       }
       return checkboxes;
     }
 
+    function getSwitch(fieldProps) {
+      var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
+      var switchee = '\n      <md-switch' + disabled + ' aria-label="' + fieldProps.viewProps.displayName + '" ng-model="vm.' + _this.camelizedSingularName + '.' + fieldProps.viewProps.name + '">' +
+          '\n        ' + fieldProps.viewProps.displayName +
+          '\n      </md-switch>';
+      return switchee;
+    }
+
     function getSelectOption(fieldProps) {
       var inputProps = getInputProps(fieldProps);
+      var hasSearch = fieldProps.viewProps.hasOwnProperty('search') && fieldProps.viewProps.search == true;
 
-      var searchTag = fieldProps.viewProps.hasOwnProperty('search') && fieldProps.viewProps.search == true ?
+      var searchTag = hasSearch ?
       '\n          <md-select-header class="select-search-header">' +
       '\n            <input ng-model="vm.selectOptSearchTerm" type="search" placeholder="{{ \'Search for a ' + fieldProps.viewProps.displayName + '...\' | translate }}" class="select-search-searchbox md-text">' +
       '\n          </md-select-header>' : '';
@@ -443,7 +454,7 @@ var ModuleGenerator = yeoman.Base.extend({
       return '\n      <md-input-container flex>' +
           '\n        <label>' + fieldProps.viewProps.displayName + '</label>' +
           getIconTag(fieldProps.viewProps, true) +
-          '\n        <md-select ng-model="vm.' + _this.camelizedSingularName + '.' + fieldProps.viewProps.name + '" md-on-close="vm.clearSelectOptSearchTerm()" data-md-container-class="select-search"' +
+          '\n        <md-select ng-model="vm.' + _this.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' + (hasSearch ? ' md-on-close="vm.clearSelectOptSearchTerm()" data-md-container-class="select-search"' : '') +
           inputProps.props.multipleProp +
           inputProps.props.requiredProp +
           '>' +
@@ -521,11 +532,12 @@ var ModuleGenerator = yeoman.Base.extend({
       };
     }
 
-    function isCheckBoxMultiple(fieldAttrs) {
+    function isSingleFieldLine(fieldAttrs) {
       return fieldAttrs != null &&
           fieldAttrs.hasOwnProperty('viewProps') &&
-          fieldAttrs.viewProps.fieldType == 'checkbox' &&
-          fieldAttrs.viewProps.checkboxType == 'multiple';
+          ((fieldAttrs.viewProps.fieldType == 'checkbox' &&
+          fieldAttrs.viewProps.checkboxType == 'multiple') ||
+          fieldAttrs.viewProps.fieldType == 'switch');
     }
 
     return setHtmlFields;
