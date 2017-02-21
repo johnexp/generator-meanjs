@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('util'), inflections = require('underscore.inflections'), s = require('underscore.string'), _ = require('lodash'), mkdirp = require('mkdirp'), yeoman = require('yeoman-generator'), fs = require('fs');
+var util = require('util'), htmlGenerator = require('./html.generator'), inflections = require('underscore.inflections'), s = require('underscore.string'), _ = require('lodash'), mkdirp = require('mkdirp'), yeoman = require('yeoman-generator'), fs = require('fs');
 
 var ModuleGenerator = yeoman.Base.extend({
   init: function () {
@@ -157,7 +157,8 @@ var ModuleGenerator = yeoman.Base.extend({
         this.populateFields = [];
         this.setControllerProperties(this)();
         this.setModelFields();
-        this.setViewProps(this)();
+        htmlGenerator.generateFields(this);
+        // this.setViewProps(this)();
       }
 
       done();
