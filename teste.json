@@ -2,9 +2,9 @@
   "drink": {
     "modelProps": {
       "type": "String",
-      "uppercase": "false",
-      "lowercase": "false",
-      "trim": "true",
+      "uppercase": false,
+      "lowercase": false,
+      "trim": true,
       "match": "/^[a-zA-Z]+$/", 
       "enum": "['Coffee', 'Tea']",
       "validate": {
@@ -15,15 +15,44 @@
       "default": "Coffee",
       "maxlength": "[100, 'The value exceeds the maximum allowed length ({MAXLENGTH})']",
       "minlength": "[5, 'The value is shorter than the minimum allowed length ({MINLENGTH})']",
-      "index": "true",
-      "unique": "false"
+      "index": true,
+      "unique": false
     },
     "viewProps": {
       "name": "drink",
       "displayName": "Drink",
       "fieldType": "text",
       "pattern": "/(\\d{2}) \\d{5}-\\d{4}/",
-      "message": "'This is not a valid phone number!'" 
+      "patternMessage": "This is not a valid phone number!",
+      "required": true,
+      "requiredMessage": "Ops"
+    }
+  },
+  "drink2": {
+    "modelProps": {
+      "type": "String",
+      "uppercase": false,
+      "lowercase": false,
+      "trim": true,
+      "match": "/^[a-zA-Z]+$/", 
+      "enum": "['Coffee', 'Tea']",
+      "validate": {
+        "validator": "function(v) {\n        return /(\\d{2}) \\d{5}-\\d{4}/.test(v);\n      }",
+        "message": "'{VALUE} is not a valid phone number!'" 
+      },
+      "required": "[true, 'Why no drink?']",
+      "default": "Coffee",
+      "maxlength": "[100, 'The value exceeds the maximum allowed length ({MAXLENGTH})']",
+      "minlength": "[5, 'The value is shorter than the minimum allowed length ({MINLENGTH})']",
+      "index": true,
+      "unique": false
+    },
+    "viewProps": {
+      "name": "drink2",
+      "displayName": "Drink 2",
+      "fieldType": "text",
+      "pattern": "/(\\d{2}) \\d{5}-\\d{4}/",
+      "patternMessage": "This is not a valid phone number 2!" 
     }
   },
   "ammount": {
@@ -39,7 +68,13 @@
     "viewProps": {
       "name": "ammount",
       "displayName": "Ammount",
-      "fieldType": "number"
+      "fieldType": "number",
+      "min": "5",
+      "max": "100",
+      "minMessage": "Too few",
+      "maxMessage": "Too much",
+      "required": true,
+      "requiredMessage": "An?"
     }
   },
   "eat": {
@@ -50,6 +85,21 @@
       "name": "eat",
       "displayName": "Eat",
       "fieldType": "checkbox",
+      "checkboxType": "multiple",
+      "disabled": "!vm.teste.ammount",
+      "options": "{ \"eggs\": \"Eggs\", \"bacon\": \"Bacon\" }",
+      "colSize": "25"
+    }
+  },
+  "eat2": {
+    "modelProps": {
+      "type": "boolean"
+    },
+    "viewProps": {
+      "name": "eat2",
+      "displayName": "Eat 2?",
+      "fieldType": "checkbox",
+      "checkboxType": "single",
       "disabled": "!vm.teste.ammount"
     }
   },
@@ -78,8 +128,11 @@
       "name": "companion",
       "displayName": "Companion",
       "fieldType": "select", 
-      "search": "true",
-      "multiple": "true"
+      "search": true,
+      "multiple": true,
+      "required": true,
+      "requiredMessage": "Mandatory",
+      "objectIdDisplayName": "displayName"
     }
   },
   "companion2": {
@@ -95,10 +148,10 @@
       "name": "companion2",
       "displayName": "Companion 2",
       "fieldType": "select", 
-      "search": "false",
-      "multiple": "false",
-      "async": "true",
-      "selectOptions": "md-no-underline"
+      "search": false,
+      "multiple": false,
+      "selectOptions": "md-no-underline",
+      "objectIdDisplayName": "displayName"
     }
   },
   "companion3": {
@@ -113,17 +166,17 @@
       "name": "companion3",
       "displayName": "Companion 3",
       "fieldType": "gridModal", 
-      "search": "true",
-      "multiple": "true",
-      "async": "true",
-      "pagination": "true"
+      "search": true,
+      "multiple": true,
+      "async": true,
+      "pagination": true
     }
   },
   "repeat": {
     "modelProps": {
       "type": "Boolean",
-      "required": "true",
-      "default": "false"
+      "required": true,
+      "default": false
     },
     "viewProps": {
       "name": "repeat",

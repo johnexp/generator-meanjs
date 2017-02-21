@@ -250,6 +250,8 @@ var ModuleGenerator = yeoman.Base.extend({
         switch (fieldProps.viewProps.fieldType) {
           case 'checkbox':
             return getCheckboxControllerAttr(fieldProps);
+          case 'radiobutton':
+            return getRadiobuttonControllerAttr(fieldProps);
           case 'select':
           default:
             return '';
@@ -270,18 +272,23 @@ var ModuleGenerator = yeoman.Base.extend({
     }
 
     function getCheckboxControllerAttr(fieldProps) {
-      if (fieldProps) {
-        var checkboxControllerAttr = '';
-        if (fieldProps.viewProps.checkboxType == 'multiple') {
-          var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
-          var selectedName = 'selected' + s(pluralizedName).classify().value();
-          var toggleSelectedName = 'toggleSelected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
-          checkboxControllerAttr += '\n    vm.' + pluralizedName + ' = getEnumValues(' + fieldProps.viewProps.name + ');';
-          checkboxControllerAttr += '\n    vm.' + selectedName + ' = [];';
-          checkboxControllerAttr += '\n    vm.' + toggleSelectedName + ' = ' + toggleSelectedName + ';';
-        }
-        return checkboxControllerAttr;
+      var checkboxControllerAttr = '';
+      if (fieldProps.viewProps.checkboxType == 'multiple') {
+        var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
+        var selectedName = 'selected' + s(pluralizedName).classify().value();
+        var toggleSelectedName = 'toggleSelected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+        checkboxControllerAttr += '\n    vm.' + pluralizedName + ' = getEnumValues(\'' + fieldProps.viewProps.name + '\');';
+        checkboxControllerAttr += '\n    vm.' + selectedName + ' = [];';
+        checkboxControllerAttr += '\n    vm.' + toggleSelectedName + ' = ' + toggleSelectedName + ';';
       }
+      return checkboxControllerAttr;
+    }
+
+    function getRadiobuttonControllerAttr(fieldProps) {
+      var radiobuttonControllerAttr = '';
+      var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
+      radiobuttonControllerAttr += '\n    vm.' + pluralizedName + ' = getEnumValues(\'' + fieldProps.viewProps.name + '\');';
+      return radiobuttonControllerAttr;
     }
 
     function getCheckboxControllerMethod(fieldProps) {
@@ -366,6 +373,8 @@ var ModuleGenerator = yeoman.Base.extend({
           return getSelectOption(fieldProps);
         case 'switch':
           return getSwitch(fieldProps);
+        case 'radiobutton':
+          return getRadiobutton(fieldProps);
         default:
           return '';
       }
@@ -433,6 +442,17 @@ var ModuleGenerator = yeoman.Base.extend({
           '\n        ' + fieldProps.viewProps.displayName +
           '\n      </md-switch>';
       return switchee;
+    }
+
+    function getRadiobutton(fieldProps) {
+      var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
+      var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
+      var radio = '\n      <md-radio-group ng-model="vm.' + _this.camelizedSingularName + '.' + fieldProps.viewProps.name + '">';
+      radio += '\n        <md-radio-button ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + '" ng-value="' + fieldProps.viewProps.name + '"' + disabled + '>' +
+        '\n          {{' + fieldProps.viewProps.name + '}}' +
+        '\n        </md-radio-button>';
+      radio += '\n      </md-radio-group>';
+      return radio;
     }
 
     function getSelectOption(fieldProps) {
@@ -505,7 +525,7 @@ var ModuleGenerator = yeoman.Base.extend({
         messages.patternMessage = '\n          <p ng-message="pattern" translate>' + fieldProps.viewProps.patternMessage + '</p>';
       }
       if (fieldProps.viewProps.hasOwnProperty('maxlengthMessage')) {
-        messages.maxlengthMessage = '\n          <p ng-message="maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>';
+        messages.maxlengthMessage = '\n          <p ng-message="md-maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>';
       }
       if (fieldProps.viewProps.hasOwnProperty('minlengthMessage')) {
         messages.minlengthMessage = '\n          <p ng-message="minlength" translate>' + fieldProps.viewProps.minlengthMessage + '</p>';
@@ -538,7 +558,8 @@ var ModuleGenerator = yeoman.Base.extend({
           fieldAttrs.hasOwnProperty('viewProps') &&
           ((fieldAttrs.viewProps.fieldType == 'checkbox' &&
           fieldAttrs.viewProps.checkboxType == 'multiple') ||
-          fieldAttrs.viewProps.fieldType == 'switch');
+          fieldAttrs.viewProps.fieldType == 'switch' ||
+          fieldAttrs.viewProps.fieldType == 'radiobutton');
     }
 
     return setHtmlFields;
