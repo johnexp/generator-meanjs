@@ -1,6 +1,6 @@
 'use strict';
 
-var inflections = require('underscore.inflections'), s = require('underscore.string');
+var inflections = require('underscore.inflections'), s = require('underscore.string'), _ = require('lodash');
 
 var controllerGenerator = module.exports;
 
@@ -9,11 +9,15 @@ controllerGenerator.generate = function (globalGenerator) {
   function getControllerFieldsProps() {
     var controllerAttrs = '';
     var controllerMethods = '';
+    var controllerInjects = '';
+    var controllerParams = '';
     for (var field in globalGenerator.fieldsJson) {
       var fieldAttrs = globalGenerator.fieldsJson[field];
       if (fieldAttrs && fieldAttrs.hasOwnProperty('viewProps')) {
         controllerAttrs += getControllerFieldAttr(fieldAttrs);
         controllerMethods += getControllerFieldMethod(fieldAttrs);
+        controllerInjects += getControllerFieldInject(fieldAttrs);
+        controllerParams += getControllerFieldParam(fieldAttrs);
       }
     }
     if (hasSelectWithSearch) {
@@ -26,33 +30,50 @@ controllerGenerator.generate = function (globalGenerator) {
     }
     globalGenerator.controllerAttrs = controllerAttrs;
     globalGenerator.controllerMethods = controllerMethods;
+    globalGenerator.controllerInjects = controllerInjects;
+    globalGenerator.controllerParams = controllerParams;
   }
 
   return getControllerFieldsProps();
 
   function getControllerFieldAttr(fieldProps) {
-    if (fieldProps) {
-      switch (fieldProps.viewProps.fieldType) {
-        case 'checkbox':
-          return getCheckboxControllerAttr(fieldProps);
-        case 'radiobutton':
-          return getRadiobuttonControllerAttr(fieldProps);
-        case 'select':
-        default:
-          return '';
-      }
+    switch (fieldProps.viewProps.fieldType) {
+      case 'checkbox':
+        return getCheckboxControllerAttr(fieldProps);
+      case 'radiobutton':
+        return getRadiobuttonControllerAttr(fieldProps);
+      case 'select':
+        return getSelectItemControllerAttr(fieldProps);
+      default:
+        return '';
     }
   }
 
   function getControllerFieldMethod(fieldProps) {
-    if (fieldProps) {
-      switch (fieldProps.viewProps.fieldType) {
-        case 'checkbox':
-          return getCheckboxControllerMethod(fieldProps);
-        case 'select':
-        default:
-          return '';
-      }
+    switch (fieldProps.viewProps.fieldType) {
+      case 'checkbox':
+        return getCheckboxControllerMethod(fieldProps);
+      case 'select':
+      default:
+        return '';
+    }
+  }
+
+  function getControllerFieldInject(fieldProps) {
+    switch (fieldProps.viewProps.fieldType) {
+      case 'select':
+        return getSelectControllerInject(fieldProps);
+      default:
+        return '';
+    }
+  }
+
+  function getControllerFieldParam(fieldProps) {
+    switch (fieldProps.viewProps.fieldType) {
+      case 'select':
+        return getSelectControllerParam(fieldProps);
+      default:
+        return '';
     }
   }
 
@@ -79,7 +100,12 @@ controllerGenerator.generate = function (globalGenerator) {
   function getSelectItemControllerAttr(fieldProps) {
     var selectItemControllerAttr = '';
     var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
-    selectItemControllerAttr += '\n    vm.' + pluralizedName + ' = getEnumValues(\'' + fieldProps.viewProps.name + '\');';
+    var classifiedPluralName = s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+    if (_.includes(fieldProps.modelProps.type, 'ObjectId')) {
+      selectItemControllerAttr += '\n    vm.' + pluralizedName + ' = List' + classifiedPluralName + 'Service.getAll();';
+    } else if (fieldProps.modelProps.hasOwnProperty('enum') || _.includes(fieldProps.modelProps.type, 'enum')) {
+      selectItemControllerAttr += '\n    vm.' + pluralizedName + ' = getEnumValues(\'' + fieldProps.viewProps.name + '\');';
+    }
     return selectItemControllerAttr;
   }
 
@@ -101,6 +127,22 @@ controllerGenerator.generate = function (globalGenerator) {
       }
       return checkboxControllerMethod;
     }
+  }
+
+  function getSelectControllerInject(fieldProps) {
+    if (_.includes(fieldProps.modelProps.type, 'ObjectId')) {
+      var classifiedPluralName = s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+      return ', \'List' + classifiedPluralName + 'Service\'';
+    }
+    return '';
+  }
+
+  function getSelectControllerParam(fieldProps) {
+    if (_.includes(fieldProps.modelProps.type, 'ObjectId')) {
+      var classifiedPluralName = s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
+      return ', List' + classifiedPluralName + 'Service';
+    }
+    return '';
   }
 
   function modelHasEnum() {

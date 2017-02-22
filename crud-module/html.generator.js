@@ -15,7 +15,7 @@ htmlGenerator.generate = function (globalGenerator) {
       if (fieldAttrs && fieldAttrs.hasOwnProperty('viewProps')) {
         if (countPairs == 0 || isSingleFieldLine(fieldAttrs)) {
           if (tagWasClosed == false) {
-            fields += '\n  </div>';
+            fields += '\n    </div>';
           }
           fields += getInputRowOppening();
           tagWasClosed = false;
@@ -23,14 +23,14 @@ htmlGenerator.generate = function (globalGenerator) {
         fields += getHtmlField(fieldAttrs);
         countPairs++;
         if (countPairs == 2 || isSingleFieldLine(fieldAttrs)) {
-          fields += '\n  </div>';
+          fields += '\n    </div>';
           countPairs = 0;
           tagWasClosed = true;
         }
       }
     }
     if (tagWasClosed == false) {
-      fields += '\n  </div>';
+      fields += '\n    </div>';
     }
     globalGenerator.formFields = fields;
   }
@@ -48,6 +48,8 @@ htmlGenerator.generate = function (globalGenerator) {
         return getSelectOption(fieldProps);
       case 'switch':
         return getSwitch(fieldProps);
+      case 'radiobutton':
+        return getRadioButton(fieldProps);
       default:
         return '';
     }
@@ -153,12 +155,27 @@ htmlGenerator.generate = function (globalGenerator) {
         '\n            </md-option>' +
         '\n          </md-optgroup>';
     } else {
+      // TODO: Validate display name and id at value and indexOf to verify if is selected case enum
       return '\n          <md-option ng-value="' + fieldProps.viewProps.name + '._id" ' +
         'ng-selected="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + fieldProps.viewProps.name + '._id) > -1" ' +
         'ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
         '\n            {{' + fieldProps.viewProps.name + '.' + fieldProps.viewProps.objectIdDisplayName + '}}' +
         '\n          </md-option>';
     }
+  }
+
+  function getRadioButton(fieldProps) {
+    var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
+    var pluralizedName = inflections.pluralize(fieldProps.viewProps.name);
+    var radioButtons = '\n      <div layout="column">' +
+      '\n        <p>' + fieldProps.viewProps.displayName + '</p>' +
+      '\n        <md-radio-group' + disabled + '>' +
+      '\n          <md-radio-button ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + '" ng-value="' + fieldProps.viewProps.name + '">' +
+      '\n            {{' + fieldProps.viewProps.name + '}}' +
+      '\n          </md-radio-button>' +
+      '\n        </md-radio-group>' +
+      '\n      </div>';
+    return radioButtons;
   }
 
   function getIconTag(viewProps, ident) {

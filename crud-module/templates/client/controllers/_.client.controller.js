@@ -6,9 +6,9 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>Controller', <%= classifiedPluralName %>Controller);
 
-  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %>, '$mdMedia', 'DialogService', 'Toast', '$log'];
+  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %>, '$mdMedia', 'DialogService', 'Toast', '$log'<%- controllerInjects %>];
 
-  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (internationalization) { %>, $translatePartialLoader, $translate<% } %>, $mdMedia, DialogService, Toast, $log) {
+  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (internationalization) { %>, $translatePartialLoader, $translate<% } %>, $mdMedia, DialogService, Toast, $log<%- controllerParams %>) {
     var vm = this;
 
     vm.authentication = Authentication;
