@@ -1,6 +1,6 @@
 'use strict';
 
-var inflections = require('underscore.inflections'), s = require('underscore.string');
+var inflections = require('underscore.inflections'), s = require('underscore.string'), _ = require('lodash');
 
 var htmlGenerator = module.exports;
 
@@ -41,21 +41,27 @@ htmlGenerator.generate = function (globalGenerator) {
     switch (fieldProps.viewProps.fieldType) {
       case 'text':
       case 'number':
-        return getInput(fieldProps);
+        return getInputText(fieldProps);
       case 'checkbox':
         return getCheckbox(fieldProps);
       case 'select':
-        return getSelectOption(fieldProps);
+        return getSelectItem(fieldProps);
       case 'switch':
         return getSwitch(fieldProps);
       case 'radiobutton':
         return getRadioButton(fieldProps);
+      case 'date':
+        return getDateField(fieldProps);
+      case 'slider':
+        return getSliderField(fieldProps);
+      case 'chips':
+        return getChipsField(fieldProps);
       default:
         return '';
     }
   }
 
-  function getInput(fieldProps) {
+  function getInputText(fieldProps) {
     var inputProps = getInputProps(fieldProps);
     var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
     '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
@@ -89,17 +95,18 @@ htmlGenerator.generate = function (globalGenerator) {
       var selectedName = 'selected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
       var toggleSelectedName = 'Selected' + s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
       var pluralizedName = s(inflections.pluralize(fieldProps.viewProps.name)).camelize().value();
+      var singularizedName = s(inflections.singularize(fieldProps.viewProps.name)).camelize().value();
       var humanizedName = s(inflections.pluralize(fieldProps.viewProps.name)).humanize().value();
 
-      checkboxes += '\n      <div flex="' + fieldProps.viewProps.colSize + '" ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + '">';
-      checkboxes += '\n        <md-checkbox name="' + selectedName + '[]"' + ' value="{{' + fieldProps.viewProps.name + '}}"' +
-        ' ng-checked="vm.' + selectedName + '.indexOf(' + fieldProps.viewProps.name + ') > -1"' + ' ng-click="vm.toggle' +
-        toggleSelectedName + '(' + fieldProps.viewProps.name + ')"' + disabled + '>' +
+      checkboxes += '\n      <div flex="' + fieldProps.viewProps.colSize + '" ng-repeat="' + singularizedName + ' in vm.' + pluralizedName + '">';
+      checkboxes += '\n        <md-checkbox name="' + selectedName + '[]"' + ' value="{{' + singularizedName + '}}"' +
+        ' ng-checked="vm.' + selectedName + '.indexOf(' + singularizedName + ') > -1"' + ' ng-click="vm.toggle' +
+        toggleSelectedName + '(' + singularizedName + ')"' + disabled + '>' +
         '\n          <span>' + humanizedName + '</span>' +
         '\n        </md-checkbox>';
       checkboxes += '\n      </div>';
     } else {
-      checkboxes += '\n      <md-checkbox ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' + disabled + '>' +
+      checkboxes += '\n      <md-checkbox name="' + fieldProps.viewProps.name + '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' + disabled + '>' +
         '\n        <span>' + fieldProps.viewProps.displayName + '</span>' +
         '\n      </md-checkbox>';
     }
@@ -108,13 +115,13 @@ htmlGenerator.generate = function (globalGenerator) {
 
   function getSwitch(fieldProps) {
     var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
-    var switchee = '\n      <md-switch' + disabled + ' aria-label="' + fieldProps.viewProps.displayName + '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '">' +
+    var switchee = '\n      <md-switch' + disabled + ' aria-label="' + fieldProps.viewProps.displayName + '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" name="' + fieldProps.viewProps.name + '">' +
       '\n        ' + fieldProps.viewProps.displayName +
       '\n      </md-switch>';
     return switchee;
   }
 
-  function getSelectOption(fieldProps) {
+  function getSelectItem(fieldProps) {
     var inputProps = getInputProps(fieldProps);
     var hasSearch = fieldProps.viewProps.hasOwnProperty('search') && fieldProps.viewProps.search == true;
 
@@ -132,7 +139,7 @@ htmlGenerator.generate = function (globalGenerator) {
 
     return '\n      <md-input-container flex>' +
       '\n        <label>' + fieldProps.viewProps.displayName + '</label>' + getIconTag(fieldProps.viewProps, true) +
-      '\n        <md-select ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' +
+      '\n        <md-select name="' + fieldProps.viewProps.name + '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '"' +
       (hasSearch ? ' md-on-close="vm.clearSelectOptSearchTerm()" data-md-container-class="select-search"' : '') +
       inputProps.props.multipleProp + inputProps.props.requiredProp + '>' +
       searchTag +
@@ -144,22 +151,31 @@ htmlGenerator.generate = function (globalGenerator) {
 
   function getOptGroup(fieldProps) {
     var pluralizedName = inflections.pluralize(fieldProps.viewProps.name);
+    var singularizedName = inflections.singularize(fieldProps.viewProps.name);
     var pluralizedDisplayNameName = inflections.pluralize(fieldProps.viewProps.displayName);
+    var selected = '', value = '', displayValue = '';
+
+    if (isEnum(fieldProps)) {
+      if (fieldProps.viewProps.hasOwnProperty('multiple') && fieldProps.viewProps.multiple == true) {
+        selected = ' ng-selected="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + singularizedName + ') > -1" ';
+      }
+      value = ' ng-value="' + singularizedName + '" ';
+      displayValue = '            {{' + singularizedName + '}}';
+    } else {
+      selected = ' ng-selected="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + singularizedName + '._id) > -1" ';
+      value = ' ng-value="' + singularizedName + '._id" ';
+      displayValue = '            {{' + singularizedName + '.' + fieldProps.viewProps.objectIdDisplayName + '}}';
+    }
 
     if (fieldProps.viewProps.hasOwnProperty('required') && fieldProps.viewProps.required == true) {
       return '\n          <md-optgroup label="' + pluralizedDisplayNameName + '">' +
-        '\n            <md-option ng-value="' + fieldProps.viewProps.name + '._id" ' +
-        'ng-selected="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + fieldProps.viewProps.name + '._id) > -1" ' +
-        'ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
-        '\n              {{' + fieldProps.viewProps.name + '.' + fieldProps.viewProps.objectIdDisplayName + '}}' +
+        '\n            <md-option' + value + selected + 'ng-repeat="' + singularizedName + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
+        '\n  ' + displayValue +
         '\n            </md-option>' +
         '\n          </md-optgroup>';
     } else {
-      // TODO: Validate display name and id at value and indexOf to verify if is selected case enum
-      return '\n          <md-option ng-value="' + fieldProps.viewProps.name + '._id" ' +
-        'ng-selected="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '.indexOf(' + fieldProps.viewProps.name + '._id) > -1" ' +
-        'ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
-        '\n            {{' + fieldProps.viewProps.name + '.' + fieldProps.viewProps.objectIdDisplayName + '}}' +
+      return '\n          <md-option' + value + selected + 'ng-repeat="' + singularizedName + ' in vm.' + pluralizedName + ' | filter: vm.selectOptSearchTerm">' +
+        '\n' + displayValue +
         '\n          </md-option>';
     }
   }
@@ -167,15 +183,87 @@ htmlGenerator.generate = function (globalGenerator) {
   function getRadioButton(fieldProps) {
     var disabled = fieldProps.viewProps.hasOwnProperty('disabled') ? ' ng-disabled="' + fieldProps.viewProps.disabled + '"' : '';
     var pluralizedName = inflections.pluralize(fieldProps.viewProps.name);
+    var singularizedName = inflections.singularize(fieldProps.viewProps.name);
     var radioButtons = '\n      <div layout="column">' +
       '\n        <p>' + fieldProps.viewProps.displayName + '</p>' +
-      '\n        <md-radio-group' + disabled + '>' +
-      '\n          <md-radio-button ng-repeat="' + fieldProps.viewProps.name + ' in vm.' + pluralizedName + '" ng-value="' + fieldProps.viewProps.name + '">' +
-      '\n            {{' + fieldProps.viewProps.name + '}}' +
+      '\n        <md-radio-group ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" name="' + fieldProps.viewProps.name + '"' + disabled + '>' +
+      '\n          <md-radio-button ng-repeat="' + singularizedName + ' in vm.' + pluralizedName + '" ng-value="' + singularizedName + '">' +
+      '\n            {{' + singularizedName + '}}' +
       '\n          </md-radio-button>' +
       '\n        </md-radio-group>' +
       '\n      </div>';
     return radioButtons;
+  }
+
+  function getDateField(fieldProps) {
+    var inputProps = getInputProps(fieldProps);
+    var datepickerOptions = fieldProps.viewProps.hasOwnProperty('datepickerOptions') ? ' ' + fieldProps.viewProps.datepickerOptions : '';
+    var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
+    '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
+    (inputProps.messages.hasOwnProperty('validMessage') ? inputProps.messages.validMessage : '') +
+    (inputProps.messages.hasOwnProperty('mindateMessage') ? inputProps.messages.mindateMessage : '') +
+    (inputProps.messages.hasOwnProperty('maxdateMessage') ? inputProps.messages.maxdateMessage : '') +
+    (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
+    '\n        </div>' : '';
+
+    return '\n      <md-input-container flex>' +
+      '\n        <label>Enter date</label>' +
+      '\n        <md-datepicker ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" name="' + fieldProps.viewProps.name + '"' + datepickerOptions +
+      inputProps.props.mindateProp +
+      inputProps.props.maxdateProp +
+      inputProps.props.requiredProp + '></md-datepicker>' + messages +
+      '\n      </md-input-container>';
+  }
+
+  function getSliderField(fieldProps) {
+    var inputProps = getInputProps(fieldProps);
+    var sliderOptions = fieldProps.viewProps.hasOwnProperty('sliderOptions') ? ' ' + fieldProps.viewProps.sliderOptions : '';
+    var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
+    '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
+    (inputProps.messages.hasOwnProperty('minMessage') ? inputProps.messages.minMessage : '') +
+    (inputProps.messages.hasOwnProperty('maxMessage') ? inputProps.messages.maxMessage : '') +
+    (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
+    '\n        </div>' : '';
+
+    // TODO: Verify if message div works fine
+    return '\n      <md-slider-container>' +
+      '\n        <span>' + fieldProps.viewProps.displayName + '</span>' +
+      '\n        <md-slider flex ' +
+      'ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
+      'name="' + fieldProps.viewProps.name + '" ' +
+      'aria-label="' + fieldProps.viewProps.displayName + '" ' +
+      'id="' + fieldProps.viewProps.name + '"' + sliderOptions +
+      inputProps.props.minProp +
+      inputProps.props.maxProp +
+      inputProps.props.requiredProp + '>' +
+      '</md-slider>' +
+      '\n        <md-input-container>' +
+      '\n          <input flex type="number" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
+      'name="' + fieldProps.viewProps.name + '" ' +
+      'aria-label="' + fieldProps.viewProps.displayName + '" ' +
+      'aria-controls="' + fieldProps.viewProps.name + '"' +
+      inputProps.props.minProp +
+      inputProps.props.maxProp +
+      inputProps.props.requiredProp + '">' +
+      '\n        </md-input-container>' + messages +
+      '\n      </md-slider-container>';
+  }
+
+  function getChipsField(fieldProps) {
+    var inputProps = getInputProps(fieldProps);
+    var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
+    '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
+    (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
+    '\n        </div>' : '';
+    // TODO: check if can be inside input container
+    return '\n      <div>' +
+      '\n        <md-chips ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
+      'name="' + fieldProps.viewProps.name + '" ' +
+      'md-enable-chip-edit="true" ' +
+      'placeholder="' + fieldProps.viewProps.displayName + '" ' +
+      'md-removable="true"' +
+      inputProps.props.requiredProp + '></md-chips>' + messages +
+      '\n      </div>';
   }
 
   function getIconTag(viewProps, ident) {
@@ -195,24 +283,26 @@ htmlGenerator.generate = function (globalGenerator) {
 
   function getInputProps(fieldProps) {
     var messages = {};
-    if (fieldProps.viewProps.hasOwnProperty('patternMessage')) {
+
+    if (fieldProps.viewProps.hasOwnProperty('patternMessage'))
       messages.patternMessage = '\n          <p ng-message="pattern" translate>' + fieldProps.viewProps.patternMessage + '</p>';
-    }
-    if (fieldProps.viewProps.hasOwnProperty('maxlengthMessage')) {
+    if (fieldProps.viewProps.hasOwnProperty('maxlengthMessage'))
       messages.maxlengthMessage = '\n          <p ng-message="maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>';
-    }
-    if (fieldProps.viewProps.hasOwnProperty('minlengthMessage')) {
+    if (fieldProps.viewProps.hasOwnProperty('minlengthMessage'))
       messages.minlengthMessage = '\n          <p ng-message="minlength" translate>' + fieldProps.viewProps.minlengthMessage + '</p>';
-    }
-    if (fieldProps.viewProps.hasOwnProperty('minMessage')) {
+    if (fieldProps.viewProps.hasOwnProperty('minMessage'))
       messages.minMessage = '\n          <p ng-message="min" translate>' + fieldProps.viewProps.minMessage + '</p>';
-    }
-    if (fieldProps.viewProps.hasOwnProperty('maxMessage')) {
+    if (fieldProps.viewProps.hasOwnProperty('maxMessage'))
       messages.maxMessage = '\n          <p ng-message="max" translate>' + fieldProps.viewProps.maxMessage + '</p>';
-    }
-    if (fieldProps.viewProps.hasOwnProperty('requiredMessage')) {
+    if (fieldProps.viewProps.hasOwnProperty('requiredMessage'))
       messages.requiredMessage = '\n          <p ng-message="required" translate>' + fieldProps.viewProps.requiredMessage + '</p>';
-    }
+    if (fieldProps.viewProps.hasOwnProperty('mindateMessage'))
+      messages.mindateMessage = '\n          <p ng-message="mindate" translate>' + fieldProps.viewProps.mindateMessage + '</p>';
+    if (fieldProps.viewProps.hasOwnProperty('maxdateMessage'))
+      messages.maxdateMessage = '\n          <p ng-message="maxdate" translate>' + fieldProps.viewProps.maxdateMessage + '</p>';
+    if (fieldProps.viewProps.hasOwnProperty('validMessage'))
+      messages.validMessage = '\n          <p ng-message="valid" translate>' + fieldProps.viewProps.validMessage + '</p>';
+
     return {
       props: {
         patternProp: fieldProps.viewProps.hasOwnProperty('pattern') ? ' pattern="' + fieldProps.viewProps.pattern + '"' : '',
@@ -221,14 +311,27 @@ htmlGenerator.generate = function (globalGenerator) {
         minProp: fieldProps.viewProps.hasOwnProperty('min') ? ' min="' + fieldProps.viewProps.min + '"' : '',
         maxProp: fieldProps.viewProps.hasOwnProperty('max') ? ' max="' + fieldProps.viewProps.max + '"' : '',
         requiredProp: fieldProps.viewProps.hasOwnProperty('required') && fieldProps.viewProps.required == true ? ' required' : '',
-        multipleProp: fieldProps.viewProps.hasOwnProperty('multiple') && fieldProps.viewProps.multiple == true ? ' multiple' : ''
+        multipleProp: fieldProps.viewProps.hasOwnProperty('multiple') && fieldProps.viewProps.multiple == true ? ' multiple' : '',
+        mindateProp: fieldProps.viewProps.hasOwnProperty('mindate') ? ' md-min-date="' + fieldProps.viewProps.mindate + '"' : '',
+        maxdateProp: fieldProps.viewProps.hasOwnProperty('maxdate') ? ' md-max-date="' + fieldProps.viewProps.maxdate + '"' : ''
       },
       messages: messages
     };
   }
 
-  function isSingleFieldLine(fieldAttrs) {
-    return fieldAttrs != null && fieldAttrs.hasOwnProperty('viewProps') && ((fieldAttrs.viewProps.fieldType == 'checkbox' && fieldAttrs.viewProps.checkboxType == 'multiple') || fieldAttrs.viewProps.fieldType == 'switch');
+  function isSingleFieldLine(fieldProps) {
+    return fieldProps != null &&
+      fieldProps.hasOwnProperty('viewProps') &&
+      ((fieldProps.viewProps.fieldType == 'checkbox' &&
+      fieldProps.viewProps.checkboxType == 'multiple')
+      || fieldProps.viewProps.fieldType == 'switch'
+      || fieldProps.viewProps.fieldType == 'chips');
+  }
+
+  function isEnum(fieldProps) {
+    if (fieldProps.modelProps.hasOwnProperty('enum') || _.includes(fieldProps.modelProps.type, 'enum')) {
+      return true;
+    }
   }
 
 };
