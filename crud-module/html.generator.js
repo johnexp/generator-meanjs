@@ -13,16 +13,17 @@ htmlGenerator.generate = function (globalGenerator) {
     for (var field in globalGenerator.fieldsJson) {
       var fieldAttrs = globalGenerator.fieldsJson[field];
       if (fieldAttrs && fieldAttrs.hasOwnProperty('viewProps')) {
-        if (countPairs == 0 || isSingleFieldLine(fieldAttrs)) {
+        var singleFieldLine = isSingleFieldLine(fieldAttrs);
+        if (countPairs == 0 || singleFieldLine) {
           if (tagWasClosed == false) {
             fields += '\n    </div>';
           }
-          fields += getInputRowOppening();
+          fields += getInputRowOppening(singleFieldLine);
           tagWasClosed = false;
         }
         fields += getHtmlField(fieldAttrs);
         countPairs++;
-        if (countPairs == 2 || isSingleFieldLine(fieldAttrs)) {
+        if (countPairs == 2 || singleFieldLine) {
           fields += '\n    </div>';
           countPairs = 0;
           tagWasClosed = true;
@@ -42,6 +43,8 @@ htmlGenerator.generate = function (globalGenerator) {
       case 'text':
       case 'number':
         return getInputText(fieldProps);
+      case 'textarea':
+        return getTextArea(fieldProps);
       case 'checkbox':
         return getCheckbox(fieldProps);
       case 'select':
@@ -83,6 +86,26 @@ htmlGenerator.generate = function (globalGenerator) {
       inputProps.props.minProp +
       inputProps.props.maxProp +
       inputProps.props.requiredProp + '>' + messages +
+      '\n      </md-input-container>';
+  }
+
+  function getTextArea(fieldProps) {
+    var inputProps = getInputProps(fieldProps);
+    var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
+    '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
+    (inputProps.messages.hasOwnProperty('maxlengthMessage') ? inputProps.messages.maxlengthMessage : '') +
+    (inputProps.messages.hasOwnProperty('minlengthMessage') ? inputProps.messages.minlengthMessage : '') +
+    (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
+    '\n        </div>' : '';
+    var rows = fieldProps.viewProps.hasOwnProperty('rows') ? ' rows="' + fieldProps.viewProps.rows + '"' : '';
+
+    return '\n      <md-input-container flex>' +
+      '\n        <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' + getIconTag(fieldProps.viewProps, true) +
+      '\n        <textarea name="' + fieldProps.viewProps.name + '" type="' + fieldProps.viewProps.fieldType + rows +
+      '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
+      inputProps.props.maxlengthProp +
+      inputProps.props.minlengthProp +
+      inputProps.props.requiredProp + '>' + messages + '</textarea>' +
       '\n      </md-input-container>';
   }
 
@@ -218,52 +241,37 @@ htmlGenerator.generate = function (globalGenerator) {
   function getSliderField(fieldProps) {
     var inputProps = getInputProps(fieldProps);
     var sliderOptions = fieldProps.viewProps.hasOwnProperty('sliderOptions') ? ' ' + fieldProps.viewProps.sliderOptions : '';
-    var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
-    '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
-    (inputProps.messages.hasOwnProperty('minMessage') ? inputProps.messages.minMessage : '') +
-    (inputProps.messages.hasOwnProperty('maxMessage') ? inputProps.messages.maxMessage : '') +
-    (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
-    '\n        </div>' : '';
 
-    // TODO: Verify if message div works fine
-    return '\n      <md-slider-container>' +
-      '\n        <span>' + fieldProps.viewProps.displayName + '</span>' +
+    return '\n      <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' +
+      '\n      <md-slider-container>' +
       '\n        <md-slider flex ' +
       'ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
       'name="' + fieldProps.viewProps.name + '" ' +
-      'aria-label="' + fieldProps.viewProps.displayName + '" ' +
-      'id="' + fieldProps.viewProps.name + '"' + sliderOptions +
+      'aria-label="' + fieldProps.viewProps.displayName + '" ' + sliderOptions +
       inputProps.props.minProp +
-      inputProps.props.maxProp +
-      inputProps.props.requiredProp + '>' +
+      inputProps.props.maxProp + '>' +
       '</md-slider>' +
       '\n        <md-input-container>' +
       '\n          <input flex type="number" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
       'name="' + fieldProps.viewProps.name + '" ' +
+      'id="' + fieldProps.viewProps.name + '" ' +
       'aria-label="' + fieldProps.viewProps.displayName + '" ' +
       'aria-controls="' + fieldProps.viewProps.name + '"' +
       inputProps.props.minProp +
       inputProps.props.maxProp +
       inputProps.props.requiredProp + '">' +
-      '\n        </md-input-container>' + messages +
+      '\n        </md-input-container>' +
       '\n      </md-slider-container>';
   }
 
   function getChipsField(fieldProps) {
     var inputProps = getInputProps(fieldProps);
-    var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
-    '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
-    (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
-    '\n        </div>' : '';
-    // TODO: check if can be inside input container
-    return '\n      <div>' +
-      '\n        <md-chips ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
+    return '\n      <md-chips flex ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
       'name="' + fieldProps.viewProps.name + '" ' +
       'md-enable-chip-edit="true" ' +
       'placeholder="' + fieldProps.viewProps.displayName + '" ' +
       'md-removable="true"' +
-      inputProps.props.requiredProp + '></md-chips>' + messages +
-      '\n      </div>';
+      inputProps.props.requiredProp + '></md-chips>';
   }
 
   function getIconTag(viewProps, ident) {
@@ -277,8 +285,11 @@ htmlGenerator.generate = function (globalGenerator) {
     return '';
   }
 
-  function getInputRowOppening() {
-    return '\n    <div layout-gt-sm="row" layout-wrap>';
+  function getInputRowOppening(isSingleFieldLine) {
+    if (isSingleFieldLine) {
+      return '\n    <div class="md-block">';
+    }
+    return '\n    <div layout="column" layout-gt-sm="row" layout-wrap>';
   }
 
   function getInputProps(fieldProps) {
@@ -325,7 +336,8 @@ htmlGenerator.generate = function (globalGenerator) {
       ((fieldProps.viewProps.fieldType == 'checkbox' &&
       fieldProps.viewProps.checkboxType == 'multiple')
       || fieldProps.viewProps.fieldType == 'switch'
-      || fieldProps.viewProps.fieldType == 'chips');
+      || fieldProps.viewProps.fieldType == 'chips'
+      || fieldProps.viewProps.fieldType == 'slider');
   }
 
   function isEnum(fieldProps) {

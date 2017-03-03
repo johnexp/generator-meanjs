@@ -15,10 +15,19 @@ exports.invokeRolesPolicies = function () {
   acl.allow([{
     roles: ['admin'],
     allows: [{
+      resources: '/api/<%= slugifiedSingularName %>',
+      permissions: '*'
+    }, {
+      resources: '/api/<%= slugifiedSingularName %>/:<%= camelizedSingularName %>Id',
+      permissions: '*'
+    }, {
       resources: '/api/<%= slugifiedPluralName %>',
       permissions: '*'
     }, {
-      resources: '/api/<%= slugifiedPluralName %>/:<%= camelizedSingularName %>Id',
+      resources: '/api/<%= slugifiedPluralName %>/:active',
+      permissions: '*'
+    }, {
+      resources: '/api/<%= slugifiedPluralName %>/enum/:field',
       permissions: '*'
     }]
   }, {
@@ -28,6 +37,9 @@ exports.invokeRolesPolicies = function () {
       permissions: ['get']
     }, {
       resources: '/api/<%= slugifiedPluralName %>/:<%= camelizedSingularName %>Id',
+      permissions: ['get']
+    }, {
+      resources: '/api/<%= slugifiedPluralName %>/:active',
       permissions: ['get']
     }]
   }]);

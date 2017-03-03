@@ -5,11 +5,11 @@
       "uppercase": false,
       "lowercase": false,
       "trim": true,
-      "match": "/^[a-zA-Z]+$/", 
+      "match": "/^[a-zA-Z]+$/",
       "enum": "['Coffee', 'Tea']",
       "validate": {
         "validator": "function(v) {\n        return /(\\d{2}) \\d{5}-\\d{4}/.test(v);\n      }",
-        "message": "'{VALUE} is not a valid phone number!'" 
+        "message": "'{VALUE} is not a valid phone number!'"
       },
       "required": "[true, 'Why no drink?']",
       "default": "Coffee",
@@ -23,7 +23,7 @@
       "displayName": "Drink",
       "fieldType": "text",
       "pattern": "/(\\d{2}) \\d{5}-\\d{4}/",
-      "message": "'This is not a valid phone number!'" 
+      "message": "'This is not a valid phone number!'"
     }
   },
   "ammount": {
@@ -84,7 +84,7 @@
   "date": {
     "modelProps": {
       "type": "Date",
-      "default": "Date.now", 
+      "default": "Date.now",
       "max": "new Date('October 13, 2017 11:13:00')",
       "min": "Date.now"
     },
@@ -113,7 +113,7 @@
     "viewProps": {
       "name": "companion",
       "displayName": "Companion",
-      "fieldType": "select", 
+      "fieldType": "select",
       "search": true,
       "multiple": true,
       "required": true,
@@ -132,7 +132,7 @@
     "viewProps": {
       "name": "companion2",
       "displayName": "Companion 2",
-      "fieldType": "select", 
+      "fieldType": "select",
       "search": false,
       "multiple": false,
       "async": true,
@@ -151,7 +151,7 @@
     "viewProps": {
       "name": "companion3",
       "displayName": "Companion 3",
-      "fieldType": "gridModal", 
+      "fieldType": "gridModal",
       "search": true,
       "multiple": true,
       "async": true,
@@ -165,7 +165,7 @@
     "viewProps": {
       "name": "companion4",
       "displayName": "Companion 4",
-      "fieldType": "select", 
+      "fieldType": "select",
       "search": true,
       "multiple": true,
       "required": true,
@@ -181,7 +181,7 @@
     "viewProps": {
       "name": "companions",
       "displayName": "Companions",
-      "fieldType": "select", 
+      "fieldType": "select",
       "search": false,
       "multiple": false,
       "required": true,

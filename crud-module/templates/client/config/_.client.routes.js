@@ -19,6 +19,9 @@
         templateUrl: '/modules/<%= slugifiedPluralName %>/client/views/list-<%= slugifiedPluralName %>.client.view.html',
         controller: '<%= classifiedPluralName %>ListController',
         controllerAs: 'vm',
+        resolve: {
+          <%= camelizedSingularName %>Resolve: new<%= classifiedSingularName %>
+        },
         data: {
           roles: ['user', 'admin'],
           pageTitle: '<%= humanizedPluralName %> List'

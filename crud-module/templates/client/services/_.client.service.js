@@ -21,10 +21,56 @@
       createOrUpdate: function () {
         var <%= camelizedSingularName %> = this;
         return createOrUpdate(<%= camelizedSingularName %>);
-      }
+      },
+      getListResource: getListResource,
+      getEnumResource: getEnumResource
     });
 
     return <%= classifiedPluralName %>;
+
+    function getListResource() {
+      return <%= classifiedPluralName %> = $resource('/api/<%= slugifiedPluralName %>/<% if (logicalExclusion) { %>:active<% } %>', {}, {<% if (logicalExclusion) { %>
+          getByState: {
+            method: 'GET',
+              params: {
+              active: '@active'
+            },
+            isArray: true
+          }<% } else { %>
+          getAll: {
+            method: 'GET',
+              isArray: true
+          }<% } %><% if (filterType == 'database') { %>,
+          query: {
+            method: 'POST',
+              transformRequest: function (data) {
+              return JSON.stringify(data);
+            },
+            isArray: true
+          }<% } %>,
+        delete: {
+          method: 'DELETE',
+            transformRequest: function (data) {
+            return JSON.stringify(data);
+          },
+          isArray: true
+        }
+      });
+    }
+
+    function getEnumResource() {
+      return $resource('/api/<%= slugifiedPluralName %>/enum/:field', {
+        field: '@field'
+      }, {
+        getEnumValues: {
+          method: 'GET',
+          params: {
+            field: '@field'
+          },
+          isArray: true
+        }
+      });
+    }
 
     function createOrUpdate(<%= camelizedSingularName %>) {
       if (<%= camelizedSingularName %>._id) {

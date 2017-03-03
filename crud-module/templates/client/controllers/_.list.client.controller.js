@@ -5,14 +5,15 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>ListController', <%= classifiedPluralName %>ListController);
 
-  <%= classifiedPluralName %>ListController.$inject = ['List<%= classifiedPluralName %>Service', '<%= classifiedPluralName %>Service'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %><% if (listType == 'complex') { %>, 'PaginationService'<% } %><% if (filterType == 'angular') { %>, '$filter'<% } %>, 'Toast', 'DialogService', '$log'];
+  <%= classifiedPluralName %>ListController.$inject = ['<%= camelizedSingularName %>Resolve'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %><% if (listType == 'complex') { %>, 'PaginationService'<% } %><% if (filterType == 'angular') { %>, '$filter'<% } %>, 'Toast', 'DialogService', '$log'];
 
-  function <%= classifiedPluralName %>ListController(List<%= classifiedPluralName %>Service, <%= classifiedPluralName %>Service<% if (internationalization) { %>, $translatePartialLoader, $translate<% } %><% if (listType == 'complex') { %>, PaginationService<% } %><% if (filterType == 'angular') { %>, $filter<% } %>, Toast, DialogService, $log) {
-    var vm = this;<% if (listType == 'complex') { %>
+  function <%= classifiedPluralName %>ListController(<%= camelizedSingularName %><% if (internationalization) { %>, $translatePartialLoader, $translate<% } %><% if (listType == 'complex') { %>, PaginationService<% } %><% if (filterType == 'angular') { %>, $filter<% } %>, Toast, DialogService, $log) {
+    var vm = this;
+    vm.<%= camelizedSingularName %>Service = <%= camelizedSingularName %>;<% if (listType == 'complex') { %>
     vm.pagination = PaginationService.getPagination();
     vm.pagination.sort = 'name';<% } if (filterType == 'angular') { if (logicalExclusion) { %>
-    vm.all<%= classifiedPluralName %> = List<%= classifiedPluralName %>Service.getByState({ active: true });<% } else { %>
-    vm.all<%= classifiedPluralName %> = List<%= classifiedPluralName %>Service.getAll();<% }} %>
+    vm.all<%= classifiedPluralName %> = <%= camelizedSingularName %>.getListResource().getByState({ active: true });<% } else { %>
+    vm.all<%= classifiedPluralName %> = <%= camelizedSingularName %>.getListResource().getAll();<% }} %>
     vm.<%= camelizedPluralName %> = <% if (filterType == 'database') { %>{}<% } else { %>vm.all<%= classifiedPluralName %><% } %>;
     vm.<%= camelizedSingularName %>Filter = {<% if (logicalExclusion) { %> active: true <% } %>};<% if (filterType == 'angular' && refilterActives) { %>
     vm.refilter = refilter;<% } %><% if (logicalExclusion) { %>
@@ -30,7 +31,7 @@
     }<% if (refilterActives) { %>
 
     function refilter() {
-      vm.all<%= classifiedPluralName %> = List<%= classifiedPluralName %>Service.getByState({ active: vm.<%= camelizedSingularName %>Filter.active }, function () {
+      vm.all<%= classifiedPluralName %> = <%= camelizedSingularName %>.getListResource().getByState({ active: vm.<%= camelizedSingularName %>Filter.active }, function () {
         vm.<%= camelizedPluralName %> = vm.all<%= classifiedPluralName %>;
         vm.<%= camelizedSingularName %>Filter = { active: vm.<%= camelizedSingularName %>Filter.active };
       });
@@ -40,8 +41,7 @@
     function changeState(ev, <%= camelizedSingularName %>) {
       DialogService.showConfirmInactivation(ev, function (option) {
         if (option === true) {
-          var <%= classifiedSingularName %>Resource = new <%= classifiedPluralName %>Service();
-          <%= classifiedSingularName %>Resource.$remove({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id }, function () {
+          vm.<%= camelizedSingularName %>Service.$remove({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id }, function () {
             filter();
           }, function (res) {
             Toast.genericErrorMessage();
@@ -55,8 +55,7 @@
     function remove(ev, <%= camelizedSingularName %>) {
       DialogService.showConfirmDeletion(ev, function (option) {
         if (option === true) {
-          var <%= classifiedSingularName %>Resource = new <%= classifiedPluralName %>Service();
-          <%= classifiedSingularName %>Resource.$remove({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id }, function () {
+          vm.<%= camelizedSingularName %>Service.$remove({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id }, function () {
             refilter();
           }, function (res) {
             Toast.genericErrorMessage();
@@ -67,10 +66,10 @@
     }<% } %><% if (filterType == 'database') { %>
 
     function filter() {
-      List<%= classifiedPluralName %>Service.query({ filter: vm.<%= camelizedSingularName %>Filter, queryCount: true }, function (result) {
+      <%= camelizedSingularName %>.getListResource().query({ filter: vm.<%= camelizedSingularName %>Filter, queryCount: true }, function (result) {
         vm.pagination.queryLimit = result[0];
         PaginationService.setOffset(vm.pagination);
-        vm.queryPromise = List<%= classifiedPluralName %>Service.query({ filter: vm.<%= camelizedSingularName %>Filter, pagination: vm.pagination }, function (result) {
+        vm.queryPromise = <%= camelizedSingularName %>.getListResource().query({ filter: vm.<%= camelizedSingularName %>Filter, pagination: vm.pagination }, function (result) {
           vm.<%= camelizedPluralName %> = result;
         });
       });

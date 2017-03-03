@@ -24,6 +24,7 @@ controllerGenerator.generate = function (globalGenerator) {
       controllerAttrs += '\n    vm.selectOptSearchTerm = \'\';';
       controllerAttrs += '\n    vm.clearSelectOptSearchTerm = clearSelectOptSearchTerm;';
       controllerMethods += addClearSearchTerm();
+      controllerMethods += addSelectSearchKeyDownEvent();
     }
     if (modelHasEnum()) {
       controllerMethods += addGetEnumMethod();
@@ -44,6 +45,8 @@ controllerGenerator.generate = function (globalGenerator) {
         return getRadiobuttonControllerAttr(fieldProps);
       case 'select':
         return getSelectItemControllerAttr(fieldProps);
+      case 'chips':
+        return getChipsControllerAttr(fieldProps);
       default:
         return '';
     }
@@ -53,7 +56,6 @@ controllerGenerator.generate = function (globalGenerator) {
     switch (fieldProps.viewProps.fieldType) {
       case 'checkbox':
         return getCheckboxControllerMethod(fieldProps);
-      case 'select':
       default:
         return '';
     }
@@ -62,7 +64,7 @@ controllerGenerator.generate = function (globalGenerator) {
   function getControllerFieldInject(fieldProps) {
     switch (fieldProps.viewProps.fieldType) {
       case 'select':
-        return getSelectControllerInject(fieldProps);
+        return getSelectItemControllerInject(fieldProps);
       default:
         return '';
     }
@@ -71,7 +73,7 @@ controllerGenerator.generate = function (globalGenerator) {
   function getControllerFieldParam(fieldProps) {
     switch (fieldProps.viewProps.fieldType) {
       case 'select':
-        return getSelectControllerParam(fieldProps);
+        return getSelectItemControllerParam(fieldProps);
       default:
         return '';
     }
@@ -109,6 +111,10 @@ controllerGenerator.generate = function (globalGenerator) {
     return selectItemControllerAttr;
   }
 
+  function getChipsControllerAttr(fieldProps) {
+    return '\n    vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ' = vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ' || [];';
+  }
+
   function getCheckboxControllerMethod(fieldProps) {
     if (fieldProps) {
       var checkboxControllerMethod = '';
@@ -129,7 +135,7 @@ controllerGenerator.generate = function (globalGenerator) {
     }
   }
 
-  function getSelectControllerInject(fieldProps) {
+  function getSelectItemControllerInject(fieldProps) {
     if (_.includes(fieldProps.modelProps.type, 'ObjectId')) {
       var classifiedPluralName = s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
       return ', \'List' + classifiedPluralName + 'Service\'';
@@ -137,7 +143,7 @@ controllerGenerator.generate = function (globalGenerator) {
     return '';
   }
 
-  function getSelectControllerParam(fieldProps) {
+  function getSelectItemControllerParam(fieldProps) {
     if (_.includes(fieldProps.modelProps.type, 'ObjectId')) {
       var classifiedPluralName = s(inflections.pluralize(fieldProps.viewProps.name)).classify().value();
       return ', List' + classifiedPluralName + 'Service';
@@ -177,5 +183,12 @@ controllerGenerator.generate = function (globalGenerator) {
         '\n      vm.selectOptSearchTerm = \'\';' +
         '\n    }';
     return clearSearchTermMethod;
+  }
+
+  function addSelectSearchKeyDownEvent() {
+    var selectSearchKeyDownEvent = '\n\n    angular.element(document.getElementsByClassName(\'select-search-searchbox\')).on(\'keydown\', function(ev) { ' +
+    '\n      ev.stopPropagation(); ' +
+    '\n    });';
+    return selectSearchKeyDownEvent;
   }
 }

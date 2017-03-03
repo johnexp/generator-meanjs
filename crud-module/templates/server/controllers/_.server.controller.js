@@ -60,7 +60,27 @@ exports.update = function(req, res) {
       res.jsonp(<%= camelizedSingularName %>);
     }
   });
-};
+};<% if (logicalExclusion) { %>
+
+/**
+ * Change activation state of an <%= humanizedSingularName %>
+ */
+exports.changeState = function(req, res) {
+  var <%= camelizedSingularName %> = req.<%= camelizedSingularName %>;
+  <%= camelizedSingularName %>.active = !<%= camelizedSingularName %>.active;
+  var state = <%= camelizedSingularName %>.active ? 'A' : 'I';
+  <%= camelizedSingularName %>.modified.push({ 'date': Date.now(), 'user': req.user, 'action': state });
+
+  <%= camelizedSingularName %>.save(function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(<%= camelizedSingularName %>);
+    }
+  });
+};<% } else { %>
 
 /**
  * Delete an <%= humanizedSingularName %>
@@ -76,7 +96,7 @@ exports.delete = function(req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      res.jsonp(mission);
+      res.jsonp(<%= camelizedSingularName %>);
     }
   });
 
@@ -89,12 +109,17 @@ exports.delete = function(req, res) {
       res.jsonp(<%= camelizedSingularName %>);
     }
   });
-};
+};<% } %>
 
 /**
  * List of <%= humanizedPluralName %>
  */
-exports.list = function(req, res) {
+exports.list = function(req, res) {<% if (logicalExclusion) { %>
+  var objFilter = {};
+  if (req.params.hasOwnProperty('active')) {
+    objFilter.active = req.params.active;
+  }
+<% } %>
   <%= classifiedSingularName %>
     .find()
     .sort('-created')
@@ -117,12 +142,25 @@ exports.list = function(req, res) {
 };
 
 /**
- * List of active <%= humanizedPluralName %>
+ * Filter <%= humanizedPluralName %>
  */
-exports.listActive = function(req, res) {
+exports.filter = function(req, res) {
+  if (req.body.hasOwnProperty('queryCount') && req.body.queryCount === true) {
+    return count(req.body, res);
+  }
+  var filter = req.body.hasOwnProperty('filter') ? req.body.filter : {};
+  var paramsLength = Object.keys(filter).length;
+  var pagination = req.body.hasOwnProperty('pagination') ? req.body.pagination : { sort: '', offset: 0, limit: 10 };
+  for (var i = 0; i < paramsLength; i++) {
+    var key = Object.keys(filter)[i];
+    if (typeof filter[key] === 'string' || filter[key] instanceof String) {
+      filter[key] = new RegExp(filter[key], 'i');
+    }
+  }
   <%= classifiedSingularName %>
-    .find({'active': true})
-    .sort('-created')
+    .find(filter).sort(pagination.sort)
+    .skip(pagination.offset)
+    .limit(pagination.limit)
     .populate({
       path: 'user',
       select: 'displayName'
@@ -140,6 +178,29 @@ exports.listActive = function(req, res) {
       }
     });
 };
+
+/**
+ * Count <%= humanizedPluralName %>
+ */
+function count(body, res) {
+  var filter = body.hasOwnProperty('filter') ? body.filter : {};
+  var paramsLength = Object.keys(filter).length;
+  for (var i = 0; i < paramsLength; i++) {
+    var key = Object.keys(filter)[i];
+    if (typeof filter[key] === 'string' || filter[key] instanceof String) {
+      filter[key] = new RegExp(filter[key], 'i');
+    }
+  }
+  <%= classifiedSingularName %>.count(filter).exec(function(err, count) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp([count]);
+    }
+  });
+}
 
 /**
  * <%= humanizedSingularName %> middleware
@@ -162,7 +223,7 @@ exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {
     }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
       <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
       <%- 'select: \'' + value.select + '\'' %>
-    <%- '}' %><% }})} %>
+    <%- '}' %><% }})} %>)
     .exec(function (err, <%= camelizedSingularName %>) {
       if (err) {
         return next(err);
@@ -174,4 +235,18 @@ exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {
       req.<%= camelizedSingularName %> = <%= camelizedSingularName %>;
       next();
     });
+};
+
+/**
+ * Get available values of a enum
+ */
+exports.getEnumValue = function(req, res, next, field) {
+  try {
+    var enumValues = <%= classifiedSingularName %>.schema.path(field).enumValues;
+    res.jsonp(enumValues);
+  } catch (ex) {
+    return res.status(400).send({
+      message: 'The field "' + field + '" is not a valid enum.'
+    });
+  }
 };
