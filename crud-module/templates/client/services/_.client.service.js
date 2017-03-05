@@ -29,28 +29,28 @@
     return <%= classifiedPluralName %>;
 
     function getListResource() {
-      return <%= classifiedPluralName %> = $resource('/api/<%= slugifiedPluralName %>/<% if (logicalExclusion) { %>:active<% } %>', {}, {<% if (logicalExclusion) { %>
-          getByState: {
-            method: 'GET',
-              params: {
-              active: '@active'
-            },
-            isArray: true
-          }<% } else { %>
-          getAll: {
-            method: 'GET',
-              isArray: true
-          }<% } %><% if (filterType == 'database') { %>,
-          query: {
-            method: 'POST',
-              transformRequest: function (data) {
-              return JSON.stringify(data);
-            },
-            isArray: true
-          }<% } %>,
+      return $resource('/api/<%= slugifiedPluralName %>/<% if (logicalExclusion) { %>:active<% } %>', {}, {<% if (logicalExclusion && refilterActives) { %>
+        getByState: {
+          method: 'GET',
+          params: {
+            active: '@active'
+          },
+          isArray: true
+        }<% } else { %>
+        getAll: {
+          method: 'GET',
+          isArray: true
+        }<% } %><% if (filterType == 'database') { %>,
+        query: {
+          method: 'POST',
+          transformRequest: function (data) {
+            return JSON.stringify(data);
+          },
+          isArray: true
+        }<% } %>,
         delete: {
           method: 'DELETE',
-            transformRequest: function (data) {
+          transformRequest: function (data) {
             return JSON.stringify(data);
           },
           isArray: true

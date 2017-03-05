@@ -1,26 +1,90 @@
 <section>
-  <div class="page-header">
-    <h1 ng-bind="vm.<%= camelizedSingularName %>.name"></h1>
-  </div>
-  <div class="pull-right"
-       ng-show="vm.<%= camelizedSingularName %>.isCurrentUserOwner">
-    <a class="btn btn-primary"
-       ui-sref="<%= camelizedPluralName %>.edit({ <%= camelizedSingularName %>Id: vm.<%= camelizedSingularName %>._id })">
-      <i class="glyphicon glyphicon-edit"></i>
-    </a>
-    <a class="btn btn-primary" ng-click="vm.remove()">
-      <i class="glyphicon glyphicon-trash"></i>
-    </a>
-  </div>
-  <small>
-    <em class="text-muted">
-      Posted on
-      <span ng-bind="vm.<%= camelizedSingularName %>.created | date:'mediumDate'"></span>
-      by
-      <span ng-if="vm.<%= camelizedSingularName %>.user"
-            ng-bind="vm.<%= camelizedSingularName %>.user.displayName"></span>
-      <span ng-if="!vm.<%= camelizedSingularName %>.user">Deleted User</span>
-    </em>
-  </small>
-  <p class="lead" ng-bind="vm.<%= camelizedSingularName %>.content"></p>
+  <md-card layout="column">
+    <md-toolbar layout="row" class="md-primary">
+      <div class="md-toolbar-tools">
+        <h2 class="md-title" ng-bind="vm.<%= camelizedSingularName %>.<%= mainField %>"></h2>
+        <div flex></div>
+        <div>
+          <md-fab-speed-dial md-open="false" md-direction="left" hide-xs class="md-scale">
+            <md-fab-trigger>
+              <md-button class="md-fab md-primary md-hue-3" ng-class="vm.$mdMedia('sm') || vm.$mdMedia('xs') ? 'md-mini' : ''" aria-label="actions">
+                <md-icon md-font-set="material-icons">more_vert</md-icon>
+                <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
+              </md-button>
+            </md-fab-trigger>
+            <md-fab-actions>
+              <md-button class="md-fab md-mini md-primary md-hue-2" ui-sref="<%= slugifiedPluralName %>.list">
+                <md-icon class="md-accent" md-font-set="material-icons">list</md-icon>
+                <md-tooltip><span<% if (internationalization) { %> translate<% } %>>List</span></md-tooltip>
+              </md-button>
+              <md-button class="md-fab md-mini md-accent" ui-sref="<%= slugifiedPluralName %>.edit({ <%= camelizedSingularName %>Id: vm.<%= camelizedSingularName %>._id })">
+                <md-icon class="md-accent" md-font-set="material-icons">edit</md-icon>
+                <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Edit</span></md-tooltip>
+              </md-button>
+              <md-button class="md-fab md-mini md-warn" ng-click="vm.remove($event)">
+                <md-icon md-font-set="material-icons">delete</md-icon>
+                <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Delete</span></md-tooltip>
+              </md-button>
+            </md-fab-actions>
+          </md-fab-speed-dial>
+        </div>
+      </div>
+    </md-toolbar>
+    <md-divider></md-divider>
+    <md-list class="md-dense" layout-padding flex>
+      <%_ if (!fieldsFileName) { _%>
+      <md-list-item class="md-list-item-text" layout="row" layout-xs="column" layout-align-xs="center start" layout-padding>
+        <p class="md-subhead" flex="30" flex-xs="100"<% if (internationalization) { %> translate<% } %>>Name</p>
+        <p class="md-caption" ng-bind="vm.<%= camelizedSingularName %>.name"></p>
+      </md-list-item>
+      <%_ } else { _%>
+      <%_ for (var fieldProps in fieldsJson) { _%>
+      <%_ var field = fieldsJson[fieldProps]; if (field.hasOwnProperty('viewProps')) { _%>
+      <md-list-item class="md-list-item-text" layout="row" layout-xs="column" layout-align-xs="center start" layout-padding>
+        <p class="md-subhead" flex="30" flex-xs="100"<% if (internationalization) { %> translate<% } %>><%= field.viewProps.displayName %></p>
+        <p class="md-caption" ng-bind="vm.<%= camelizedSingularName %>.<%= field.viewProps.name %><%_ if (field.viewProps.fieldType == 'date') { _%><%- ' ' %>| date: 'dd/MM/yyyy HH:mm:ss'<%_ } _%>"></p>
+      </md-list-item>
+      <%_ } _%>
+      <%_ } _%>
+      <%_ } _%>
+      <%_ if (logicalExclusion) { _%>
+      <md-list-item class="md-list-item-text" layout="row" layout-xs="column" layout-align-xs="center start" layout-padding>
+        <p class="md-subhead" flex="30"<% if (internationalization) { %> translate<% } %>>Active</p>
+        <p class="md-caption" ng-bind="vm.<%= camelizedSingularName %>.active<% if (internationalization) { %> | translate<% } %>"></p>
+      </md-list-item>
+      <%_ } _%>
+      <md-divider></md-divider>
+      <md-list-item class="md-list-item-text md-no-proxy" layout="row" layout-xs="column" layout-align-xs="center start" layout-padding layout-align="none start">
+        <p class="md-subhead" flex="30"<% if (internationalization) { %> translate<% } %>>History</p>
+        <md-content layout="column">
+          <md-table-container>
+            <table md-table>
+              <thead md-head md-order="vm.historyPagination.sort">
+              <tr md-row>
+                <th md-column md-order-by="user.displayName"><span<% if (internationalization) { %> translate<% } %>>User</span></th>
+                <th md-column md-order-by="date"><span<% if (internationalization) { %> translate<% } %>>Date</span></th>
+                <th md-column md-order-by="action"><span<% if (internationalization) { %> translate<% } %>>Action</span></th>
+              </tr>
+              </thead>
+              <tbody md-body>
+              <tr md-row ng-repeat="modified in vm.<%= camelizedSingularName %>.modified | orderBy: vm.historyPagination.sort | limitTo: vm.historyPagination.limit: (vm.historyPagination.page - 1) * vm.historyPagination.limit">
+                <td md-cell><md-button class="md-primary" ui-sref="admin.user({ userId: modified.user._id })">{{modified.user.displayName}}</md-button></td>
+                <td md-cell>{{modified.date | date: "dd/MM/yyyy HH:mm:ss"}}</td>
+                <td md-cell>{{modified.action<% if (internationalization) { %> | translate<% } %>}}</td>
+              </tr>
+              </tbody>
+            </table>
+            <table md-table ng-if="!vm.<%= camelizedSingularName %>.modified || vm.<%= camelizedSingularName %>.modified.length == 0">
+              <tbody md-body>
+              <tr md-row>
+                <td md-cell class="no-records-cell" layout="row" layout-align="center center"><h2 class="md-subheader"<% if (internationalization) { %> translate<% } %>>No records</h2></td>
+              </tr>
+              </tbody>
+            </table>
+          </md-table-container>
+          <md-table-pagination md-limit="vm.historyPagination.limit" md-limit-options="vm.historyPagination.limitOptions" md-label="{{vm.historyPagination.label<% if (internationalization) { %> | translate<% } %>}}" md-page="vm.historyPagination.page" md-total="{{vm.<%= camelizedSingularName %>.modified.length}}" md-page-select></md-table-pagination>
+        </md-content>
+      </md-list-item>
+    </md-list>
+  </md-card>
 </section>

@@ -47,6 +47,8 @@ controllerGenerator.generate = function (globalGenerator) {
         return getSelectItemControllerAttr(fieldProps);
       case 'chips':
         return getChipsControllerAttr(fieldProps);
+      case 'date':
+        return getDateControllerAttr(fieldProps);
       default:
         return '';
     }
@@ -113,6 +115,10 @@ controllerGenerator.generate = function (globalGenerator) {
 
   function getChipsControllerAttr(fieldProps) {
     return '\n    vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ' = vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ' || [];';
+  }
+
+  function getDateControllerAttr(fieldProps) {
+    return '\n    vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ' = ' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ' ? new Date(' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ') : ' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + ';';
   }
 
   function getCheckboxControllerMethod(fieldProps) {
@@ -186,8 +192,8 @@ controllerGenerator.generate = function (globalGenerator) {
   }
 
   function addSelectSearchKeyDownEvent() {
-    var selectSearchKeyDownEvent = '\n\n    angular.element(document.getElementsByClassName(\'select-search-searchbox\')).on(\'keydown\', function(ev) { ' +
-    '\n      ev.stopPropagation(); ' +
+    var selectSearchKeyDownEvent = '\n\n    angular.element(document.getElementsByClassName(\'select-search-searchbox\')).on(\'keydown\', function(ev) {' +
+    '\n      ev.stopPropagation();' +
     '\n    });';
     return selectSearchKeyDownEvent;
   }

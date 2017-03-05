@@ -9,21 +9,17 @@ var mongoose = require('mongoose'),
 /**
  * <%= humanizedSingularName %> Schema
  */
-var <%= classifiedSingularName %>Schema = new Schema({
+var <%= classifiedSingularName %>Schema = new Schema({<% if (!fieldsFileName) { %>
   name: {
     type: String,
     default: '',
     required: 'Please fill <%= humanizedSingularName %> name',
     trim: true
-  },
+  },<% } else { %><%- modelFields %><% } %>
   created: {
     type: Date,
     default: Date.now
   },
-  user: {
-    type: Schema.ObjectId,
-    ref: 'User'
-  }<% if (fieldsFileName) { %><%- modelFields %><% } %>,
   modified: [{
     _id: false,
     date: {
@@ -40,7 +36,11 @@ var <%= classifiedSingularName %>Schema = new Schema({
   active: {
     type: Boolean,
     default: true
-  }<% } %>
+  }<% } %>,
+  user: {
+    type: Schema.ObjectId,
+    ref: 'User'
+  }
 });
 
 mongoose.model('<%= classifiedSingularName %>', <%= classifiedSingularName %>Schema);

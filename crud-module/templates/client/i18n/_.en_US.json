@@ -3,6 +3,9 @@
   "No <%= humanizedPluralName %> yet, why don't you": "No <%= humanizedPluralName %> yet, why don't you",
   "Edit <%= humanizedSingularName %>": "Edit <%= humanizedSingularName %>",
   "New <%= humanizedSingularName %>": "New <%= humanizedSingularName %>",
+  <%_ if (!fieldsFileName) { _%>
   "Name": "Name",
-  "<%= humanizedSingularName %> name is required.": "<%= humanizedSingularName %> name is required."
+  <%_ } _%>
+  "<%= humanizedSingularName %> name is required.": "<%= humanizedSingularName %> name is required.",
+  "Your request could not be completed! Please contact your system administrator.": "Your request could not be completed! Please contact your system administrator."
 }

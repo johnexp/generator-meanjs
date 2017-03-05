@@ -3,6 +3,9 @@
   "No <%= humanizedPluralName %> yet, why don't you": "Sem <%= humanizedPluralName %> ainda, deseja",
   "Edit <%= humanizedSingularName %>": "Editar <%= humanizedSingularName %>",
   "New <%= humanizedSingularName %>": "Novo <%= humanizedSingularName %>",
+  <%_ if (!fieldsFileName) { _%>
   "Name": "Nome",
-  "<%= humanizedSingularName %> name is required.": "O nome do <%= humanizedSingularName %> é obrigatório."
+  <%_ } _%>
+  "<%= humanizedSingularName %> name is required.": "O nome do <%= humanizedSingularName %> é obrigatório.",
+  "Your request could not be completed! Please contact your system administrator.": "Sua requisição não pode ser completada! Por favor, contacte o administrador do sistema."
 }

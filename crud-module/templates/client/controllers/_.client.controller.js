@@ -6,11 +6,13 @@
     .module('<%= slugifiedPluralName %>')
     .controller('<%= classifiedPluralName %>Controller', <%= classifiedPluralName %>Controller);
 
-  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', '$window', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %>, '$mdMedia', 'DialogService', 'Toast', '$log'<%- controllerInjects %>];
+  <%= classifiedPluralName %>Controller.$inject = ['$scope', '$state', 'Authentication', '<%= camelizedSingularName %>Resolve'<% if (internationalization) { %>, '$translatePartialLoader', '$translate'<% } %>, '$mdMedia', 'DialogService', 'Toast', '$log'<%- controllerInjects %>, 'PaginationService'];
 
-  function <%= classifiedPluralName %>Controller ($scope, $state, $window, Authentication, <%= camelizedSingularName %><% if (internationalization) { %>, $translatePartialLoader, $translate<% } %>, $mdMedia, DialogService, Toast, $log<%- controllerParams %>) {
+  function <%= classifiedPluralName %>Controller ($scope, $state, Authentication, <%= camelizedSingularName %><% if (internationalization) { %>, $translatePartialLoader, $translate<% } %>, $mdMedia, DialogService, Toast, $log<%- controllerParams %>, PaginationService) {
     var vm = this;
 
+    vm.historyPagination = PaginationService.getPagination();
+    vm.historyPagination.sort = '-date';
     vm.authentication = Authentication;
     vm.<%= camelizedSingularName %> = <%= camelizedSingularName %>;
     vm.form = {};<% if (logicalExclusion) { %>
@@ -74,7 +76,6 @@
         Toast.genericErrorMessage();
         $log.error(res.data.message);
       }
-    }
-<%- controllerMethods %>
+    }<%- controllerMethods %>
   }
 }());

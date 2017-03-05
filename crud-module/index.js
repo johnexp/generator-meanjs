@@ -151,14 +151,17 @@ var ModuleGenerator = yeoman.Base.extend({
       this.internationalization = props.internationalization;
       this.addMenuItems = props.addMenuItems;
       this.fieldsFileName = props.fieldsFileName;
+      this.fieldsJson = {};
       if (this.fieldsFileName) {
         var obj = JSON.parse(fs.readFileSync(this.fieldsFileName, 'utf8'));
         this.fieldsJson = obj;
-        this.populateFields = [];
-        this.setModelFields();
-        controllerGenerator.generate(this);
-        htmlGenerator.generate(this);
       }
+
+      this.populateFields = [];
+      this.setMainField();
+      this.setModelFields();
+      controllerGenerator.generate(this);
+      htmlGenerator.generate(this);
 
       done();
     }.bind(this));
@@ -182,20 +185,32 @@ var ModuleGenerator = yeoman.Base.extend({
     }
   },
 
+  setMainField: function () {
+    if (this.fieldsFileName) {
+      for (var field in this.fieldsJson) {
+        if (this.fieldsJson[field].hasOwnProperty('viewProps') && this.fieldsJson[field].viewProps.hasOwnProperty('mainField') && this.fieldsJson[field].viewProps.mainField == true) {
+          this.mainField = this.fieldsJson[field].viewProps.name;
+          return;
+        }
+      }
+    }
+    this.mainField = 'name';
+  },
+
   setModelFields: function () {
     if (this.fieldsFileName) {
       var model = '';
       this.populateFields = [];
 
-      for (var field in this.fieldsJson) { // drink
+      for (var field in this.fieldsJson) {
         var fieldAttrs = this.fieldsJson[field];
         if (fieldAttrs.hasOwnProperty('modelProps')) {
-          model += ',\n';
+          model += '\n';
           model += '  ' + field + ': {';
           model += propToString(fieldAttrs.modelProps);
           // removing last comma
           model = model.slice(0, -1);
-          model += '\n  }';
+          model += '\n  },';
         }
         if (fieldAttrs.hasOwnProperty('populate')) {
           this.populateFields.push(fieldAttrs.populate);

@@ -6,36 +6,43 @@
   </div>
   <md-divider></md-divider>
   <h3 class="md-subheader"<% if (internationalization) { %> translate<% } %>>Filter</h3><% if (listType == 'simple') { %>
-  <form name="vm.form.<%= camelizedSingularName %>Filter" ng-submit="vm.filterSimple()">
-    <div layout="row">
-      <md-input-container flex="50">
+  <form name="vm.form.<%= camelizedSingularName %>Filter">
+    <div layout="column" layout-gt-sm="row" layout-wrap>
+      <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Search</label>
         <md-icon md-font-set="material-icons">filter_list</md-icon>
         <input name="value" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.value">
       </md-input-container>
-      <md-input-container flex="50">
+      <%_ if (logicalExclusion) { _%>
+      <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Active</label>
         <md-icon md-font-set="material-icons">check</md-icon>
+        <%_ if (refilterActives) { _%>
         <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active" ng-change="vm.refilter()">
+        <%_ } else { _%>
+        <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active">
+        <%_ } _%>
           <md-option ng-value=""><span<% if (internationalization) { %> translate<% } %>>All</span></md-option>
           <md-option ng-value="true"<% if (internationalization) { %> translate<% } %>>Yes</md-option>
           <md-option ng-value="false"<% if (internationalization) { %> translate<% } %>>No</md-option>
         </md-select>
       </md-input-container>
+      <%_ } _%>
     </div>
   </form>
   <md-divider></md-divider>
   <md-list class="md-dense" flex>
-    <div ng-if="!vm.<%= camelizedPluralName %> || (vm.<%= camelizedPluralName %> | filter: { 'name': vm.<%= camelizedSingularName %>Filter.value }).length == 0">
+    <%_ var activeFilter = logicalExclusion && !refilterActives ? ', \'active\': vm.' + camelizedSingularName + 'Filter.active ' : ''; _%>
+    <div ng-if="!vm.<%= camelizedPluralName %> || (vm.<%= camelizedPluralName %> | filter: { '<%= mainField %>': vm.<%= camelizedSingularName %>Filter.value<%- activeFilter %> }).length == 0">
       <md-subheader class="md-no-sticky" layout="row" layout-align="center center"><% if (internationalization) { %>
         {{ 'No records' | translate }}<% } else { %>
         No records<% } %>
       </md-subheader>
       <md-divider></md-divider>
     </div>
-    <md-list-item class="md-2-line secondary-button-padding" ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %> | filter: { 'name': vm.<%= camelizedSingularName %>Filter.value }">
+    <md-list-item class="md-2-line secondary-button-padding" ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %> | filter: { '<%= mainField %>': vm.<%= camelizedSingularName %>Filter.value<%- activeFilter %> }">
       <div class="md-list-item-text" layout="column">
-        <h3>{{ <%= camelizedSingularName %>.name }}</h3>
+        <h3>{{ <%= camelizedSingularName %>.<%= mainField %> }}</h3>
         <p class="md-caption"><% if (internationalization) { %>
           {{ "Posted on" | translate }}<% } else { %>
           Posted on<% } %>
@@ -46,7 +53,7 @@
           <span ng-if="!<%= camelizedSingularName %>.user"<% if (internationalization) { %> translate<% } %>>Deleted User</span>
         </p>
         <md-menu class="md-secondary">
-          <md-button ng-click="$mdOpenMenu()" class="md-icon-button">
+          <md-button ng-click="$mdMenu.open()" class="md-icon-button">
             <md-icon md-font-set="material-icons">more_vert</md-icon>
             <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
           </md-button>
@@ -88,12 +95,16 @@
       <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Name</label>
         <md-icon md-font-set="material-icons">person</md-icon>
-        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.name">
+        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.<%= mainField %>">
       </md-input-container>
       <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Active</label>
         <md-icon md-font-set="material-icons">check</md-icon>
+        <%_ if (refilterActives) { _%>
         <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active" ng-change="vm.refilter()">
+        <%_ } else { _%>
+        <md-select ng-model="vm.<%= camelizedSingularName %>Filter.active" ng-change="vm.filter()">
+        <%_ } _%>
           <md-option ng-value=""<% if (internationalization) { %> translate<% } %>>All</md-option>
           <md-option ng-value="true"<% if (internationalization) { %> translate<% } %>>Yes</md-option>
           <md-option ng-value="false"<% if (internationalization) { %> translate<% } %>>No</md-option>
@@ -112,7 +123,7 @@
       </thead>
       <tbody md-body>
       <tr md-row ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %> | orderBy: vm.pagination.sort | limitTo: vm.pagination.limit: (vm.pagination.page - 1) * vm.pagination.limit">
-        <td md-cell>{{ <%= camelizedSingularName %>.name }}</td>
+        <td md-cell>{{ <%= camelizedSingularName %>.<%= mainField %> }}</td>
         <td md-cell layout="row">
           <div class="show-gt-sm hide-xs hide-sm">
             <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })" class="md-icon-button">
@@ -135,7 +146,7 @@
           </div>
           <div class="hide-gt-sm">
             <md-menu>
-              <md-button ng-click="$mdOpenMenu()" class="md-icon-button">
+              <md-button ng-click="$mdMenu.open()" class="md-icon-button">
                 <md-icon md-font-set="material-icons">more_vert</md-icon>
                 <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
               </md-button>
@@ -187,7 +198,7 @@
       <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Name</label>
         <md-icon md-font-set="material-icons">person</md-icon>
-        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.name">
+        <input name="name" type="text" ng-model="vm.<%= camelizedSingularName %>Filter.<%= mainField %>">
       </md-input-container>
       <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Active</label>
@@ -223,7 +234,7 @@
       </thead>
       <tbody md-body>
       <tr md-row ng-repeat="<%= camelizedSingularName %> in vm.<%= camelizedPluralName %>">
-        <td md-cell>{{ <%= camelizedSingularName %>.name }}</td>
+        <td md-cell>{{ <%= camelizedSingularName %>.<%= mainField %> }}</td>
         <td md-cell layout="row">
           <div class="show-gt-sm hide-xs hide-sm">
             <md-button ui-sref="<%= slugifiedPluralName %>.view({ <%= camelizedSingularName %>Id: <%= camelizedSingularName %>._id })" class="md-icon-button">
@@ -246,7 +257,7 @@
           </div>
           <div class="hide-gt-sm">
             <md-menu>
-              <md-button ng-click="$mdOpenMenu()" class="md-icon-button">
+              <md-button ng-click="$mdMenu.open()" class="md-icon-button">
                 <md-icon md-font-set="material-icons">more_vert</md-icon>
                 <md-tooltip><span<% if (internationalization) { %> translate<% } %>>Actions</span></md-tooltip>
               </md-button>

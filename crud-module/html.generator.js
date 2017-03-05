@@ -75,9 +75,10 @@ htmlGenerator.generate = function (globalGenerator) {
     (inputProps.messages.hasOwnProperty('maxMessage') ? inputProps.messages.maxMessage : '') +
     (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
     '\n        </div>' : '';
+    var translate = globalGenerator.internationalization ? ' translate' : '';
 
     return '\n      <md-input-container flex>' +
-      '\n        <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' + getIconTag(fieldProps.viewProps, true) +
+      '\n        <label for="' + fieldProps.viewProps.name + '"' + translate + '>' + fieldProps.viewProps.displayName + '</label>' + getIconTag(fieldProps.viewProps, true) +
       '\n        <input name="' + fieldProps.viewProps.name + '" type="' + fieldProps.viewProps.fieldType +
       '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
       inputProps.props.patternProp +
@@ -98,9 +99,10 @@ htmlGenerator.generate = function (globalGenerator) {
     (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
     '\n        </div>' : '';
     var rows = fieldProps.viewProps.hasOwnProperty('rows') ? ' rows="' + fieldProps.viewProps.rows + '"' : '';
+    var translate = globalGenerator.internationalization ? ' translate' : '';
 
     return '\n      <md-input-container flex>' +
-      '\n        <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' + getIconTag(fieldProps.viewProps, true) +
+      '\n        <label for="' + fieldProps.viewProps.name + '"' + translate + '>' + fieldProps.viewProps.displayName + '</label>' + getIconTag(fieldProps.viewProps, true) +
       '\n        <textarea name="' + fieldProps.viewProps.name + '" type="' + fieldProps.viewProps.fieldType + rows +
       '" ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" id="' + fieldProps.viewProps.name + '"' +
       inputProps.props.maxlengthProp +
@@ -147,13 +149,15 @@ htmlGenerator.generate = function (globalGenerator) {
   function getSelectItem(fieldProps) {
     var inputProps = getInputProps(fieldProps);
     var hasSearch = fieldProps.viewProps.hasOwnProperty('search') && fieldProps.viewProps.search == true;
+    var translate = globalGenerator.internationalization ? ' translate' : '';
+    var translateFilter = globalGenerator.internationalization ? ' | translate' : '';
 
     var searchTag = hasSearch ? '\n          <md-select-header class="select-search-header">' +
-    '\n            <input ng-model="vm.selectOptSearchTerm" type="search" placeholder="{{ \'Search for a ' + fieldProps.viewProps.displayName + '...\' | translate }}" class="select-search-searchbox md-text">' +
+    '\n            <input ng-model="vm.selectOptSearchTerm" type="search" placeholder="{{ \'Search for a ' + fieldProps.viewProps.displayName + '...\'' + translateFilter + ' }}" class="select-search-searchbox md-text">' +
     '\n          </md-select-header>' : '';
 
     var emptyOption = !fieldProps.viewProps.hasOwnProperty('required') || fieldProps.viewProps.required == false ?
-      '\n          <md-option><em translate>None</em></md-option>' : '';
+      '\n          <md-option><em' + translate + '>None</em></md-option>' : '';
 
     var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
     '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
@@ -224,16 +228,15 @@ htmlGenerator.generate = function (globalGenerator) {
     var messages = Object.keys(inputProps.messages).length > 0 && inputProps.messages.constructor === Object ?
     '\n        <div ng-messages="vm.form.' + globalGenerator.camelizedSingularName + 'Form.' + fieldProps.viewProps.name + '.$error">' +
     (inputProps.messages.hasOwnProperty('validMessage') ? inputProps.messages.validMessage : '') +
-    (inputProps.messages.hasOwnProperty('mindateMessage') ? inputProps.messages.mindateMessage : '') +
-    (inputProps.messages.hasOwnProperty('maxdateMessage') ? inputProps.messages.maxdateMessage : '') +
     (inputProps.messages.hasOwnProperty('requiredMessage') ? inputProps.messages.requiredMessage : '') +
     '\n        </div>' : '';
 
     return '\n      <md-input-container flex>' +
       '\n        <label>Enter date</label>' +
       '\n        <md-datepicker ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" name="' + fieldProps.viewProps.name + '"' + datepickerOptions +
-      inputProps.props.mindateProp +
-      inputProps.props.maxdateProp +
+      // TODO: Fix min and max date at controller
+      // inputProps.props.mindateProp +
+      // inputProps.props.maxdateProp +
       inputProps.props.requiredProp + '></md-datepicker>' + messages +
       '\n      </md-input-container>';
   }
@@ -241,8 +244,9 @@ htmlGenerator.generate = function (globalGenerator) {
   function getSliderField(fieldProps) {
     var inputProps = getInputProps(fieldProps);
     var sliderOptions = fieldProps.viewProps.hasOwnProperty('sliderOptions') ? ' ' + fieldProps.viewProps.sliderOptions : '';
+    var translate = globalGenerator.internationalization ? ' translate' : '';
 
-    return '\n      <label for="' + fieldProps.viewProps.name + '" translate>' + fieldProps.viewProps.displayName + '</label>' +
+    return '\n      <label for="' + fieldProps.viewProps.name + '"' + translate + '>' + fieldProps.viewProps.displayName + '</label>' +
       '\n      <md-slider-container>' +
       '\n        <md-slider flex ' +
       'ng-model="vm.' + globalGenerator.camelizedSingularName + '.' + fieldProps.viewProps.name + '" ' +
@@ -294,25 +298,26 @@ htmlGenerator.generate = function (globalGenerator) {
 
   function getInputProps(fieldProps) {
     var messages = {};
+    var translate = globalGenerator.internationalization ? ' translate' : '';
 
     if (fieldProps.viewProps.hasOwnProperty('patternMessage'))
-      messages.patternMessage = '\n          <p ng-message="pattern" translate>' + fieldProps.viewProps.patternMessage + '</p>';
+      messages.patternMessage = '\n          <p ng-message="pattern"' + translate + '>' + fieldProps.viewProps.patternMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('maxlengthMessage'))
-      messages.maxlengthMessage = '\n          <p ng-message="maxlength" translate>' + fieldProps.viewProps.maxlengthMessage + '</p>';
+      messages.maxlengthMessage = '\n          <p ng-message="maxlength"' + translate + '>' + fieldProps.viewProps.maxlengthMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('minlengthMessage'))
-      messages.minlengthMessage = '\n          <p ng-message="minlength" translate>' + fieldProps.viewProps.minlengthMessage + '</p>';
+      messages.minlengthMessage = '\n          <p ng-message="minlength"' + translate + '>' + fieldProps.viewProps.minlengthMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('minMessage'))
-      messages.minMessage = '\n          <p ng-message="min" translate>' + fieldProps.viewProps.minMessage + '</p>';
+      messages.minMessage = '\n          <p ng-message="min"' + translate + '>' + fieldProps.viewProps.minMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('maxMessage'))
-      messages.maxMessage = '\n          <p ng-message="max" translate>' + fieldProps.viewProps.maxMessage + '</p>';
+      messages.maxMessage = '\n          <p ng-message="max"' + translate + '>' + fieldProps.viewProps.maxMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('requiredMessage'))
-      messages.requiredMessage = '\n          <p ng-message="required" translate>' + fieldProps.viewProps.requiredMessage + '</p>';
+      messages.requiredMessage = '\n          <p ng-message="required"' + translate + '>' + fieldProps.viewProps.requiredMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('mindateMessage'))
-      messages.mindateMessage = '\n          <p ng-message="mindate" translate>' + fieldProps.viewProps.mindateMessage + '</p>';
+      messages.mindateMessage = '\n          <p ng-message="mindate"' + translate + '>' + fieldProps.viewProps.mindateMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('maxdateMessage'))
-      messages.maxdateMessage = '\n          <p ng-message="maxdate" translate>' + fieldProps.viewProps.maxdateMessage + '</p>';
+      messages.maxdateMessage = '\n          <p ng-message="maxdate"' + translate + '>' + fieldProps.viewProps.maxdateMessage + '</p>';
     if (fieldProps.viewProps.hasOwnProperty('validMessage'))
-      messages.validMessage = '\n          <p ng-message="valid" translate>' + fieldProps.viewProps.validMessage + '</p>';
+      messages.validMessage = '\n          <p ng-message="valid"' + translate + '>' + fieldProps.viewProps.validMessage + '</p>';
 
     return {
       props: {

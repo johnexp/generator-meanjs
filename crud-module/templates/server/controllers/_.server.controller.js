@@ -63,7 +63,7 @@ exports.update = function(req, res) {
 };<% if (logicalExclusion) { %>
 
 /**
- * Change activation state of an <%= humanizedSingularName %>
+ * Change activation state of a <%= humanizedSingularName %>
  */
 exports.changeState = function(req, res) {
   var <%= camelizedSingularName %> = req.<%= camelizedSingularName %>;
@@ -83,22 +83,10 @@ exports.changeState = function(req, res) {
 };<% } else { %>
 
 /**
- * Delete an <%= humanizedSingularName %>
+ * Delete a <%= humanizedSingularName %>
  */
 exports.delete = function(req, res) {
   var <%= camelizedSingularName %> = req.<%= camelizedSingularName %>;
-  <%= camelizedSingularName %>.active = false;
-  <%= camelizedSingularName %>.modified.push({ 'date': Date.now(), 'user': req.user, 'action': 'D' });
-
-  <%= camelizedSingularName %>.save(function(err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(<%= camelizedSingularName %>);
-    }
-  });
 
   <%= camelizedSingularName %>.remove(function(err) {
     if (err) {
@@ -121,15 +109,15 @@ exports.list = function(req, res) {<% if (logicalExclusion) { %>
   }
 <% } %>
   <%= classifiedSingularName %>
-    .find()
+    .find(objFilter)
     .sort('-created')
-    .populate({
+    .populate([{
       path: 'user',
       select: 'displayName'
     }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
       <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
       <%- 'select: \'' + value.select + '\'' %>
-    <%- '}' %><% }})} %>)
+    <%- '}' %><% }})} %>])
     .exec(function(err, <%= camelizedPluralName %>) {
       if (err) {
         return res.status(400).send({
@@ -161,13 +149,13 @@ exports.filter = function(req, res) {
     .find(filter).sort(pagination.sort)
     .skip(pagination.offset)
     .limit(pagination.limit)
-    .populate({
+    .populate([{
       path: 'user',
       select: 'displayName'
     }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
       <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
       <%- 'select: \'' + value.select + '\'' %>
-    <%- '}' %><% }})} %>)
+    <%- '}' %><% }})} %>])
     .exec(function(err, <%= camelizedPluralName %>) {
       if (err) {
         return res.status(400).send({
@@ -214,7 +202,7 @@ exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {
   }
 
   <%= classifiedSingularName %>.findById(id)
-    .populate({
+    .populate([{
       path: 'user',
       select: 'displayName'
     }, {
@@ -223,7 +211,7 @@ exports.<%= camelizedSingularName %>ByID = function(req, res, next, id) {
     }<% if (populateFields) { %><% populateFields.forEach(function (value) { %><%= ', {' %>
       <%- 'path: \'' + value.path + '\'' %><% if (value.select) { %><%= ',' %>
       <%- 'select: \'' + value.select + '\'' %>
-    <%- '}' %><% }})} %>)
+    <%- '}' %><% }})} %>])
     .exec(function (err, <%= camelizedSingularName %>) {
       if (err) {
         return next(err);

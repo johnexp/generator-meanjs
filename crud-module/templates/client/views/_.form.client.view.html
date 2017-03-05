@@ -3,7 +3,7 @@
     <h2 class="md-title"<% if (internationalization) { %> translate<% } %>>{{vm.<%= camelizedSingularName %>._id ? 'Edit <%= humanizedSingularName %>' : 'New <%= humanizedSingularName %>'}}</h2>
     <md-divider></md-divider>
   </div>
-  <form name="vm.form.<%= camelizedSingularName %>Form" layout="column" ng-submit="vm.save(vm.form.<%= camelizedSingularName %>Form.$valid)" novalidate>
+  <form name="vm.form.<%= camelizedSingularName %>Form" layout="column" ng-submit="vm.save(vm.form.<%= camelizedSingularName %>Form.$valid)" novalidate><% if (!fieldsFileName) { %>
     <div layout-gt-sm="row" layout-wrap>
       <md-input-container flex>
         <label<% if (internationalization) { %> translate<% } %>>Name</label>
@@ -13,9 +13,9 @@
           <p ng-message="required"<% if (internationalization) { %> translate<% } %>><%= humanizedSingularName %> name is required.</p>
         </div>
       </md-input-container>
-    </div><%- formFields %>
-    <div layout="row" layout-align="end center">
-      <md-button type="button" class="md-raised md-warn" go-back-btn>
+    </div><% } %><%- formFields %>
+    <div layout="row" layout-align="center center">
+      <md-button type="button" class="md-warn" go-back-btn>
         <md-icon md-font-set="material-icons">cancel</md-icon><% if (internationalization) { %>
         {{'Cancel' | translate}}<% } else { %>
         Cancel<% } %>

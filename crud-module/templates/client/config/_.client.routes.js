@@ -11,7 +11,8 @@
     $stateProvider
       .state('<%= camelizedPluralName %>', {
         abstract: true,
-        url: '/<%= slugifiedPluralName %>',
+        parent: 'home',
+        url: '<%= slugifiedPluralName %>',
         template: '<ui-view/>'
       })
       .state('<%= camelizedPluralName %>.list', {
